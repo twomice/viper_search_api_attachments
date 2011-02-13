@@ -1,0 +1,17 @@
+### Eclipse Workspace Patch 1.0
+#P search_api
+Index: contrib/search_api_page/search_api_page.pages.inc
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/search_api/contrib/search_api_page/Attic/search_api_page.pages.inc,v
+retrieving revision 1.1.2.10
+diff -u -r1.1.2.10 search_api_page.pages.inc
+--- contrib/search_api_page/search_api_page.pages.inc	6 Nov 2010 13:11:18 -0000	1.1.2.10
++++ contrib/search_api_page/search_api_page.pages.inc	12 Feb 2011 09:02:46 -0000
+@@ -165,7 +165,6 @@
+   $entities = $variables['entities'];
+   $keys = $variables['keys'];
+ 
+-  $index->dataAlter($entities);
+   entity_prepare_view($index->entity_type, $entities);
+ 
+   $output = '<p class="search-performance">' . format_plural($results['result count'],

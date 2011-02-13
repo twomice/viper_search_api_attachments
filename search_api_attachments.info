@@ -1,0 +1,10 @@
+; $Id$
+
+name = Search API attachments
+description = "Provides a generic API for modules offering search capabilites."
+dependencies[] = search_api
+core = 7.x
+package = Search
+
+configure = admin/config/search/search_api/attachments
+files[] = includes/callback_attachments_settings.inc
