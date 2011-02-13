@@ -29,3 +29,11 @@ function search_api_attachments_requirements($phase) {
   }
   return $requirements;
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function search_api_attachments_uninstall() {
+  variable_del('search_api_attachments_tika_path');
+  variable_del('search_api_attachments_tika_jar');
+}
