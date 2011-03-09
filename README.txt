@@ -39,8 +39,6 @@ This will build the jar file in a subfolder tika-app/target
 
 Copy search_api_attachments into your modules folder
 
-Apply included patch to search_api_page (Temporary: http://drupal.org/node/1058410)
-
 Install the search_api_attachments module in your Drupal site
 
 Go to the configuration: admin/config/search/search_api/attachments
