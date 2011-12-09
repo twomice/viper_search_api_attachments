@@ -19,7 +19,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
         foreach ($item as $key => $value) {
           $file[$key] = $value;
         }
-        if (!in_array($file['filemime'], $exclude)) {
+        if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
           $item->attachments_content = self::getFileContent($file);
         }
       }
@@ -31,7 +31,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
           if (isset($item->$name)) {
             foreach ($item->$name as $value) {
               foreach ($value as $file) {
-                if (!in_array($file['filemime'], $exclude)) {
+                if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
                   $attachments = 'attachments_' . $name;
                   $item->$attachments .= self::getFileContent($file) . ' ';
                 }
@@ -140,6 +140,14 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
       $cmd = 'export DYLD_LIBRARY_PATH=""; ' . $cmd;
     }
     return shell_exec($cmd);
+  }
+  
+  protected function is_temporary($file) {
+    $needle = 'temporary://';
+    $haystack = $file['uri'];
+    $test = strpos($haystack, $needle);
+    $result = ($test !== FALSE);
+    return $result;
   }
 
 }
