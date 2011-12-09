@@ -15,13 +15,13 @@ function search_api_attachments_settings_form() {
     '#type' => 'textfield',
     '#title' => t('Tika directory path:'),
     '#default_value' => variable_get('search_api_attachments_tika_path', ''),
-    '#description' => t('The full path to tika directory. All library jars must be in the same directory. E.g. /var/apache-tika-0.8-src/tika-app/target/'),
+    '#description' => t('The full path to tika directory. All library jars must be in the same directory. E.g. /var/apache-tika-1.0/'),
   );
   $form['search_api_attachments_tika_jar'] = array(
     '#type' => 'textfield',
     '#title' => t('Tika jar file:'),
-    '#default_value' => variable_get('search_api_attachments_tika_jar', 'tika-app-0.8.jar'),
-    '#description' => t('The name of the tika CLI application jar file, e.g. tika-app-0.8.jar.'),
+    '#default_value' => variable_get('search_api_attachments_tika_jar', 'tika-app-1.0.jar'),
+    '#description' => t('The name of the tika CLI application jar file, e.g. tika-app-1.0.jar.'),
   );
   return system_settings_form($form);
 }

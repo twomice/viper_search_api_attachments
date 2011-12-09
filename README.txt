@@ -23,19 +23,8 @@ On Ubuntu 10.10
 Install java
 > sudo apt-get install openjdk-6-jdk
 
-Install Maven2
-> sudo apt-get install maven2
-
 Download Apache Tika library: http://tika.apache.org/download.html
-> wget http://apache.mogo.be//tika/apache-tika-0.8-src.zip
-
-Change to folder
-> cd apache-tika-0.8-src
-
-Install Tika
-> mvn install
-
-This will build the jar file in a subfolder tika-app/target
+> wget http://apache.megamobile.be//tika/tika-app-1.0.jar
 
 Copy search_api_attachments into your modules folder
 
@@ -43,5 +32,5 @@ Install the search_api_attachments module in your Drupal site
 
 Go to the configuration: admin/config/search/search_api/attachments
 
-Enter the full path on your server where you build the jar e.g. /var/apache-tika-0.8-src/tika-app/target/ 
-and the name of the jar file e.g. tika-app-0.8.jar
+Enter the full path on your server where you downloaded the jar e.g. /var/apache-tika/ 
+and the name of the jar file e.g. tika-app-1.0.jar
