@@ -102,7 +102,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   }
 
   protected function extract_simple($file) {
-    $text = file_get_contents(file_create_url($file['uri']));
+    $text = file_get_contents(self::get_realpath($file));
     $text = iconv("UTF-8", "UTF-8//IGNORE", $text);
     $text = filter_xss(str_replace(array('<', '>'), array(' <', '> '), $text), array());
     $text = htmlspecialchars(html_entity_decode($text, ENT_NOQUOTES, 'UTF-8'), ENT_NOQUOTES, 'UTF-8');
@@ -112,7 +112,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
   protected function extract_exif($file) {
     $ret = '';
-    $size = getimagesize(file_create_url($file['uri']), $info);
+    $size = getimagesize(self::get_realpath($file), $info);
     if (isset($info['APP13'])) {
       $iptc = iptcparse($info['APP13']);
       foreach ($iptc as $key => $value) {
@@ -125,7 +125,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   }
 
   protected function extract_tika($file) {
-    $filepath = file_create_url($file['uri']);
+    $filepath = self::get_realpath($file);
     $tika_path = realpath(variable_get('search_api_attachments_tika_path', ''));
     $tika = realpath($tika_path . '/' . variable_get('search_api_attachments_tika_jar', 'tika-app-0.8.jar'));
     if (!($tika) || !is_file($tika)) {
@@ -150,4 +150,16 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     return $result;
   }
 
+  protected function get_realpath($file) {
+    $wrapper = file_stream_wrapper_get_instance_by_uri($file['uri']);
+    $scheme = file_uri_scheme($file['uri']);
+    $local_wrappers = file_get_stream_wrappers(STREAM_WRAPPERS_LOCAL);
+    if (in_array($scheme, array_keys($local_wrappers))) {
+      drupal_debug($wrapper->realpath());
+      return $wrapper->realpath();
+    }
+    else {
+      return $wrapper->getExternalUrl();
+    }
+  }
 }
