@@ -14,7 +14,11 @@ function search_api_attachments_requirements($phase) {
   $t = get_t();
   if ($phase == 'runtime') {
     $temp = tempnam(file_directory_temp(), 'asa');
-    exec('java -version > ' . $temp . ' 2>&1');
+    $cmd = 'java -version > ' . $temp . ' 2>&1';
+    if (strpos(ini_get('extension_dir'), 'MAMP/')) {
+      $cmd = 'export DYLD_LIBRARY_PATH=""; ' . $cmd;
+    }
+    exec($cmd);
     $stderror = file_get_contents($temp);
     $found = preg_match('/Runtime Environment/', $stderror);
 
