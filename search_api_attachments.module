@@ -28,7 +28,7 @@ function search_api_attachments_menu() {
 function search_api_attachments_search_api_alter_callback_info() {
   $callbacks['search_api_attachments_alter_settings'] = array(
     'name' => t('File attachments'),
-    'description' => t('Search API attachments settings.'),
+    'description' => t('Extract the content out of attached files and index it.'),
     'class' => 'SearchApiAttachmentsAlterSettings',
   );
   return $callbacks;
