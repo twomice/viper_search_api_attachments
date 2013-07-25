@@ -24,7 +24,7 @@ Install java
 > sudo apt-get install openjdk-6-jdk
 
 Download Apache Tika library: http://tika.apache.org/download.html
-> wget http://apache.megamobile.be//tika/tika-app-1.0.jar
+> wget http://mir2.ovh.net/ftp.apache.org/dist/tika/tika-app-1.4.jar
 
 Copy search_api_attachments into your modules folder
 
@@ -33,4 +33,4 @@ Install the search_api_attachments module in your Drupal site
 Go to the configuration: admin/config/search/search_api/attachments
 
 Enter the full path on your server where you downloaded the jar e.g. /var/apache-tika/ 
-and the name of the jar file e.g. tika-app-1.0.jar
+and the name of the jar file e.g. tika-app-1.4.jar

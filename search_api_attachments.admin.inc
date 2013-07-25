@@ -20,8 +20,8 @@ function search_api_attachments_settings_form() {
   $form['search_api_attachments_tika_jar'] = array(
     '#type' => 'textfield',
     '#title' => t('Tika jar file:'),
-    '#default_value' => variable_get('search_api_attachments_tika_jar', 'tika-app-1.0.jar'),
-    '#description' => t('The name of the tika CLI application jar file, e.g. tika-app-1.0.jar.'),
+    '#default_value' => variable_get('search_api_attachments_tika_jar', 'tika-app-1.4.jar'),
+    '#description' => t('The name of the tika CLI application jar file, e.g. tika-app-1.4.jar.'),
   );
   return system_settings_form($form);
 }
