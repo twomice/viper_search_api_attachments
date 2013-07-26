@@ -89,15 +89,23 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   }
 
   protected function getFileContent($file) {
-    if ($file['filemime'] == 'text/plain' || $file['filemime'] == 'text/x-diff') {
-      $ret = self::extract_simple($file);
-    }
-    elseif (in_array($file['filemime'], array('image/jpeg', 'image/jpg', 'image/tiff'))) {
-      $ret = self::extract_exif($file);
+    $ret = FALSE;
+    if (file_exists($file['uri'])) {
+      if ($file['filemime'] == 'text/plain' || $file['filemime'] == 'text/x-diff') {
+        $ret = self::extract_simple($file);
+      }
+      elseif (in_array($file['filemime'], array('image/jpeg', 'image/jpg', 'image/tiff'))) {
+        $ret = self::extract_exif($file);
+      }
+      else {
+        $ret = self::extract_tika($file);
+      }
     }
     else {
-      $ret = self::extract_tika($file);
+      // Log the missing file information.
+      watchdog('search_api_attachments', "Couldn't index %filename content because this file was missing.", array('%filename' => $file['filename']));
     }
+
     return $ret;
   }
 
