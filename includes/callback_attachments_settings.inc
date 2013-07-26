@@ -172,7 +172,6 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     $scheme = file_uri_scheme($file['uri']);
     $local_wrappers = file_get_stream_wrappers(STREAM_WRAPPERS_LOCAL);
     if (in_array($scheme, array_keys($local_wrappers))) {
-      drupal_debug($wrapper->realpath());
       return $wrapper->realpath();
     }
     else {
