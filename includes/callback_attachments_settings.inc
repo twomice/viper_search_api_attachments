@@ -131,8 +131,9 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     if (!($tika) || !is_file($tika)) {
       throw new Exception(t('Invalid path or filename for tika application jar.'));
     }
-    // UTF-8 multibyte characters will be stripped by escapeshellargs() for the default C-locale.
-    // So temporarily set the locale to UTF-8 so that the filepath remain valid.
+    // UTF-8 multibyte characters will be stripped by escapeshellargs() for the 
+    // default C-locale.
+    // So temporarily set the locale to UTF-8 so that the filepath remains valid.
     $backup_locale = setlocale(LC_CTYPE, '0');
     setlocale(LC_CTYPE, 'en_US.UTF-8');
     $param = '';
@@ -143,7 +144,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     if (strpos(ini_get('extension_dir'), 'MAMP/')) {
       $cmd = 'export DYLD_LIBRARY_PATH=""; ' . $cmd;
     }
-    // Support utf-8 commands: http://www.php.net/manual/pt_BR/function.shell-exec.php#85095
+    // Support UTF-8 commands: http://www.php.net/manual/pt_BR/function.shell-exec.php#85095
     $cmd = "LANG=en_US.utf-8; $cmd";
     // Restore the locale.
     setlocale(LC_CTYPE, $backup_locale);
