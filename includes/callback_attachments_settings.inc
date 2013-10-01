@@ -7,6 +7,9 @@
 
 class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
+  // Cache table name.
+  const CACHE_TABLE = 'cache_search_api_attachments';
+
   public function alterItems(array &$items) {
 
     $exclude = array();
@@ -89,16 +92,40 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   }
 
   protected function getFileContent($file) {
-    $ret = FALSE;
+    $extraction = FALSE;
+    // Let's make the variable consistent.
+    $file = (array) $file;
+
+    // Before running the (performance-intensive) extraction process, check
+    // if we already have a cached copy of the extracted data.
+    if (isset($file['fid'])) {
+      // Load cached extraction based off file ID.
+      $cid = 'cached_extraction_:' . $file['fid'];
+      $cached_extraction = cache_get($cid, self::CACHE_TABLE);
+
+      // If we have a cache hit, there really is no need to continue.
+      if (!empty($cached_extraction->data)) {
+        return $cached_extraction->data;
+      }
+    }
+
     if (file_exists($file['uri'])) {
       if ($file['filemime'] == 'text/plain' || $file['filemime'] == 'text/x-diff') {
-        $ret = self::extract_simple($file);
+        $extraction = self::extract_simple($file);
       }
       elseif (in_array($file['filemime'], array('image/jpeg', 'image/jpg', 'image/tiff'))) {
-        $ret = self::extract_exif($file);
+        $extraction = self::extract_exif($file);
       }
       else {
-        $ret = self::extract_tika($file);
+        $extraction_method = variable_get('search_api_attachments_extract_using', 'tika');
+        // Send the extraction request to the right place depending on the
+        // current setting.
+        if ($extraction_method == 'tika') {
+          $extraction = self::extract_tika($file);
+        }
+        else {
+          $extraction = self::extract_solr($file);
+        }
       }
     }
     else {
@@ -106,7 +133,12 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
       watchdog('search_api_attachments', "Couldn't index %filename content because this file was missing.", array('%filename' => $file['filename']));
     }
 
-    return $ret;
+    // If we have actual extracted data, write it to the cache.
+    if ($extraction !== FALSE && isset($cid)) {
+      cache_set($cid, $extraction, self::CACHE_TABLE);
+    }
+
+    return $extraction;
   }
 
   protected function extract_simple($file) {
@@ -158,7 +190,84 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     setlocale(LC_CTYPE, $backup_locale);
     return shell_exec($cmd);
   }
-  
+
+  /**
+   * Extract data using Solr (via the ExtractingRequestHandler) or using the
+   * remote Tika servlet.
+   * @see  http://wiki.apache.org/solr/ExtractingRequestHandler.
+   * @see  http://wiki.apache.org/tika/TikaJAXRS.
+   */
+  protected function extract_solr($file) {
+    $extraction = FALSE;
+
+    $filepath = self::get_realpath($file);
+    try {
+      $filename = basename($filepath);
+
+      // Server name is stored in the index.
+      $server_name = $this->index->server;
+
+      $server = search_api_server_load($server_name, TRUE);
+
+      // Make sure this is a solr server.
+      if ($server->class != 'search_api_solr_service') {
+        throw new SearchApiException(t('Server %server is not a Solr server, unable to extract file.', array(
+          '%server' => $server_name,
+        )));
+      }
+
+      // Open a connection to the server.
+      $solr_connection = $server->getSolrConnection();
+
+      // Path for our servlet request.
+      $servlet_path = 'update/extract';
+
+      // Parameters for the extraction request.
+      $params = array(
+        'extractOnly' => 'true',
+        'resource.name' => $filename,
+        // Matches the -t command for the tika CLI app.
+        'extractFormat' => 'text',
+        'wt' => 'json',
+      );
+
+      // Heavily inspired by apachesolr_file.
+      // @see apachesolr_file_extract().
+      // Construct a multi-part form-data POST body in $data.
+      $boundary = '--' . md5(uniqid(REQUEST_TIME));
+      $data = "--{$boundary}\r\n";
+      // The 'filename' used here becomes the property name in the response.
+      $data .= 'Content-Disposition: form-data; name="file"; filename="extracted"';
+      $data .= "\r\nContent-Type: application/octet-stream\r\n\r\n";
+      $data .= file_get_contents($filepath);
+      $data .= "\r\n--{$boundary}--\r\n";
+      $headers = array('Content-Type' => 'multipart/form-data; boundary=' . $boundary);
+      $options = array(
+        'method' => 'POST',
+        'headers' => $headers,
+        'data' => $data,
+      );
+
+      // Make a servlet request using the solr connection.
+      $response = $solr_connection->makeServletRequest($servlet_path, $params, $options);
+
+      // If we have an extracted response, all is well.
+      if (isset($response->extracted)) {
+        $extraction = $response->extracted;
+      }
+    }
+    catch (Exception $e) {
+      // Log the exception to watchdog. Exceptions from Solr may be transient,
+      // or indicate a problem with a specific file.
+      watchdog('search_api_attachments', 'Exception occurred sending %filepath to Solr.', array(
+        '%filepath' => $file['uri'],
+      ));
+      watchdog_exception('search_api_attachments', $e);
+    }
+
+    return $extraction;
+  }
+
   protected function is_temporary($file) {
     $needle = 'temporary://';
     $haystack = $file['uri'];

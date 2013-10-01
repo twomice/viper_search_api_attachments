@@ -41,3 +41,25 @@ function search_api_attachments_default_excluded() {
   $default = array('aif', 'art', 'avi', 'bmp', 'gif', 'ico', 'mov', 'oga', 'ogv', 'png', 'psd', 'ra', 'ram', 'rgb');
   return $default;
 }
+
+/**
+ * Implements hook_file_update().
+ */
+function search_api_attachments_file_update($file) {
+  // If there is cached extracted data for this file, delete it so it can be
+  // re-extracted.
+  $file = (array) $file;
+  $cid = 'cached_extraction_:' . $file['fid'];
+  cache_clear_all($cid, 'cache_search_api_attachments');
+}
+
+/**
+ * Implements hook_file_delete().
+ */
+function search_api_attachments_file_delete($file) {
+  // If there is cached extracted data for this file, delete it.
+  // We don't need it anymore.
+  $file = (array) $file;
+  $cid = 'cached_extraction_:' . $file['fid'];
+  cache_clear_all($cid, 'cache_search_api_attachments');
+}
