@@ -38,7 +38,7 @@ function search_api_attachments_search_api_alter_callback_info() {
  * default excluded file extensions
  */
 function search_api_attachments_default_excluded() {
-  $default = array('aif', 'art', 'avi', 'bmp', 'gif', 'ico', 'mov', 'oga', 'ogv', 'png', 'psd', 'ra', 'ram', 'rgb');
+  $default = array('aif', 'art', 'avi', 'bmp', 'gif', 'ico', 'mov', 'oga', 'ogv', 'png', 'psd', 'ra', 'ram', 'rgb', 'flv');
   return $default;
 }
 
