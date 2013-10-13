@@ -1,10 +1,14 @@
 Search API Attachments
 
-This module will extract the content out of attached files using the Tika library and index it.
-Search API attachments will index many file formats, including PDF's, MS Office, MP3 (ID3 tags), JPEG Metadata, ...
+This module will extract the content out of attached files using the Tika
+library or the build in Solr extractor and index it.
+Search API attachments will index many file formats, including PDF's, MS Office,
+MP3 (ID3 tags), JPEG Metadata, ...
 
-The module was tested with Apache Solr, however it should work on all Search API search servers.
-Database Search gives errors on saving but should work (Core Issue: http://drupal.org/node/1007830)
+The module was tested with Apache Solr, however it should work on all Search API
+search servers.
+Database Search gives errors on saving but should work
+(Core Issue: http://drupal.org/node/1007830)
 
 More information:
 http://tika.apache.org/download.html
@@ -12,7 +16,8 @@ http://tika.apache.org/download.html
 REQUIREMENTS
 ------------
 
-Requires the ability to run java on your server and an installation of the Apache Tika library
+Requires the ability to run java on your server and an installation of the
+Apache Tika library if you don't want to use the Solr build in extractor.
 
 MODULE INSTALLATION
 -------------------
@@ -22,7 +27,8 @@ Install the search_api_attachments module in your Drupal site
 
 Go to the configuration: admin/config/search/search_api/attachments
 
-Choose an extraction method and follow the instructions under the respective heading below.
+Choose an extraction method and follow the instructions under the respective
+heading below.
 
 
 EXTRACTION CONFIGURATION (Tika)
@@ -35,22 +41,27 @@ Install java
 Download Apache Tika library: http://tika.apache.org/download.html
 > wget http://mir2.ovh.net/ftp.apache.org/dist/tika/tika-app-1.4.jar
 
-Enter the full path on your server where you downloaded the jar e.g. /var/apache-tika/
-and the name of the jar file e.g. tika-app-1.4.jar
+Enter the full path on your server where you downloaded the jar
+e.g. /var/apache-tika/ and the name of the jar file e.g. tika-app-1.4.jar
 
 EXTRACTION CONFIGURATION (Solr)
 -------------------------------
-This requires 1.0-RC5 or newer of the 'Search API Solr' module (namely for issue #1986284) and the Solr config files that come with it.
+This requires 1.0-RC5 or newer of the 'Search API Solr' module (namely for issue
+#1986284) and the Solr config files that come with it.
 
-If you're just using the 'example' application with the built-in Jetty server, you can skip straight to editing your solrconfig.xml file. Libraries should automatically be loaded.
+If you're just using the 'example' application with the built-in Jetty server,
+you can skip straight to editing your solrconfig.xml file. Libraries should
+automatically be loaded.
 
-Before continuing, download and extract the Solr package for your particular release, if you don't have it already, e.g.
+Before continuing, download and extract the Solr package for your particular
+release, if you don't have it already, e.g.
 > wget http://apache.mirror.serversaustralia.com.au/lucene/solr/3.6.2/apache-solr-3.6.2.tgz
 > tar xvzf apache-solr-3.6.2.tgz
 
 In the below instructions, replace '$SOLR_HOME' with your Solr home directory.
 
-From the Solr package, copy the 'dist/' and 'lib/' directories into your solr home directory, e.g.:
+From the Solr package, copy the 'dist/' and 'lib/' directories into your solr
+home directory, e.g.:
 > cp -R apache-solr-3.6.2/dist $SOLR_HOME/
 > cp -R apache-solr-3.6.2/contrib/extraction/lib $SOLR_HOME/
 
@@ -61,3 +72,7 @@ And add the following line:
 <lib dir="./dist/" regex="apache-solr-cell-\d.*\.jar" />
 
 Then restart Tomcat/Jetty.
+
+SUBMODULES
+-------------------------------
+search_api_attachments_field_collections: More details in contrib folder.
