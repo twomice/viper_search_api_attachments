@@ -48,7 +48,7 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
                     $files = field_get_items('field_collection_item', $collection_item, $file_field);
                     if (!empty($files)) {
                       foreach ($files as $file) {
-                        if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
+                        if (!in_array($file['filemime'], $exclude) && !$this->is_temporary($file)) {
                           $attachments = 'attachments_' . $file_field;
                           if (isset($item->{$attachments})) {
                             $item->{$attachments} .= ' ' . $this->getFileContent($file);
@@ -82,7 +82,7 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
       );
     }
     else {
-      $fields = self::getFileFields();
+      $fields = $this->getFileFields();
       foreach ($fields as $name => $field) {
         $ret['attachments_' . $name] = array(
           'label' => 'Attachment content: ' . $name,

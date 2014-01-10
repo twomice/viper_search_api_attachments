@@ -22,19 +22,19 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
         foreach ($item as $key => $value) {
           $file[$key] = $value;
         }
-        if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
-          $item->attachments_content = self::getFileContent($file);
+        if (!in_array($file['filemime'], $exclude) && !$this->is_temporary($file)) {
+          $item->attachments_content = $this->getFileContent($file);
         }
       }
     }
     else {
-      $fields = self::getFileFields();
+      $fields = $this->getFileFields();
       foreach ($items as $id => &$item) {
         foreach ($fields as $name => $field) {
           if (isset($item->$name)) {
             foreach ($item->$name as $value) {
               foreach ($value as $file) {
-                if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
+                if (!in_array($file['filemime'], $exclude) && !$this->is_temporary($file)) {
                   $attachments = 'attachments_' . $name;
                   if (isset($item->{$attachments})) {
                     $item->{$attachments} .= ' ' . $this->getFileContent($file);
@@ -74,7 +74,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
       );
     }
     else {
-      $fields = self::getFileFields();
+      $fields = $this->getFileFields();
       foreach ($fields as $name => $field) {
         $ret['attachments_' . $name] = array(
           'label' => 'Attachment content: ' . $name,
@@ -106,7 +106,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     if (isset($file['fid'])) {
       // Load cached extraction based off file ID.
       $cid = 'cached_extraction_:' . $file['fid'];
-      $cached_extraction = cache_get($cid, self::CACHE_TABLE);
+      $cached_extraction = cache_get($cid, $this->CACHE_TABLE);
 
       // If we have a cache hit, there really is no need to continue.
       if (!empty($cached_extraction->data)) {
@@ -116,20 +116,20 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
     if (file_exists($file['uri'])) {
       if ($file['filemime'] == 'text/plain' || $file['filemime'] == 'text/x-diff') {
-        $extraction = self::extract_simple($file);
+        $extraction = $this->extract_simple($file);
       }
       elseif (in_array($file['filemime'], array('image/jpeg', 'image/jpg', 'image/tiff'))) {
-        $extraction = self::extract_exif($file);
+        $extraction = $this->extract_exif($file);
       }
       else {
         $extraction_method = variable_get('search_api_attachments_extract_using', 'tika');
         // Send the extraction request to the right place depending on the
         // current setting.
         if ($extraction_method == 'tika') {
-          $extraction = self::extract_tika($file);
+          $extraction = $this->extract_tika($file);
         }
         else {
-          $extraction = self::extract_solr($file);
+          $extraction = $this->extract_solr($file);
         }
       }
     }
@@ -140,14 +140,14 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
     // If we have actual extracted data, write it to the cache.
     if ($extraction !== FALSE && isset($cid)) {
-      cache_set($cid, $extraction, self::CACHE_TABLE);
+      cache_set($cid, $extraction, $this->CACHE_TABLE);
     }
 
     return $extraction;
   }
 
   protected function extract_simple($file) {
-    $text = file_get_contents(self::get_realpath($file));
+    $text = file_get_contents($this->get_realpath($file));
     $text = iconv("UTF-8", "UTF-8//IGNORE", $text);
     $text = filter_xss(str_replace(array('<', '>'), array(' <', '> '), $text), array());
     $text = htmlspecialchars(html_entity_decode($text, ENT_NOQUOTES, 'UTF-8'), ENT_NOQUOTES, 'UTF-8');
@@ -157,7 +157,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
   protected function extract_exif($file) {
     $ret = '';
-    $size = getimagesize(self::get_realpath($file), $info);
+    $size = getimagesize($this->get_realpath($file), $info);
     if (isset($info['APP13'])) {
       $iptc = iptcparse($info['APP13']);
       if (is_array($iptc)) {
@@ -172,7 +172,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   }
 
   protected function extract_tika($file) {
-    $filepath = self::get_realpath($file);
+    $filepath = $this->get_realpath($file);
     $tika_path = realpath(variable_get('search_api_attachments_tika_path', ''));
     $tika = realpath($tika_path . '/' . variable_get('search_api_attachments_tika_jar', 'tika-app-1.4.jar'));
     if (!($tika) || !is_file($tika)) {
@@ -207,7 +207,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   protected function extract_solr($file) {
     $extraction = FALSE;
 
-    $filepath = self::get_realpath($file);
+    $filepath = $this->get_realpath($file);
     try {
       $filename = basename($filepath);
 
