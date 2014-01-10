@@ -36,7 +36,12 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
               foreach ($value as $file) {
                 if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
                   $attachments = 'attachments_' . $name;
-                  $item->$attachments .= self::getFileContent($file) . ' ';
+                  if (isset($item->{$attachments})) {
+                    $item->{$attachments} .= ' ' . $this->getFileContent($file);
+                  }
+                  else {
+                    $item->{$attachments} = $this->getFileContent($file);
+                  }
                 }
               }
             }

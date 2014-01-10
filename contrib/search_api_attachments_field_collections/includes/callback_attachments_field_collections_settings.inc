@@ -50,7 +50,12 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
                       foreach ($files as $file) {
                         if (!in_array($file['filemime'], $exclude) && !self::is_temporary($file)) {
                           $attachments = 'attachments_' . $file_field;
-                          $item->$attachments .= self::getFileContent($file) . ' ';
+                          if (isset($item->{$attachments})) {
+                            $item->{$attachments} .= ' ' . $this->getFileContent($file);
+                          }
+                          else {
+                            $item->{$attachments} = $this->getFileContent($file);
+                          }
                         }
                       }
                     }
