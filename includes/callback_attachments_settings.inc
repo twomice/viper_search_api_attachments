@@ -155,9 +155,11 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     $size = getimagesize(self::get_realpath($file), $info);
     if (isset($info['APP13'])) {
       $iptc = iptcparse($info['APP13']);
-      foreach ($iptc as $key => $value) {
-        foreach ($value as $innerkey => $innervalue) {
-          $ret .= $innervalue . ' ';
+      if (is_array($iptc)) {
+        foreach ($iptc as $key => $value) {
+          foreach ($value as $innerkey => $innervalue) {
+            $ret .= $innervalue . ' ';
+          }
         }
       }
     }
@@ -171,7 +173,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     if (!($tika) || !is_file($tika)) {
       throw new Exception(t('Invalid path or filename for tika application jar.'));
     }
-    // UTF-8 multibyte characters will be stripped by escapeshellargs() for the 
+    // UTF-8 multibyte characters will be stripped by escapeshellargs() for the
     // default C-locale.
     // So temporarily set the locale to UTF-8 so that the filepath remains valid.
     $backup_locale = setlocale(LC_CTYPE, '0');
