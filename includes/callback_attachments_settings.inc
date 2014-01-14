@@ -236,6 +236,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
         // Matches the -t command for the tika CLI app.
         'extractFormat' => 'text',
         'wt' => 'json',
+        'hl' => 'on',
       );
 
       // Heavily inspired by apachesolr_file.
@@ -260,7 +261,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
       // If we have an extracted response, all is well.
       if (isset($response->extracted)) {
-        $extraction = $response->extracted;
+        $extraction = $file['filename'] . ': ' . $response->extracted;
       }
     }
     catch (Exception $e) {
