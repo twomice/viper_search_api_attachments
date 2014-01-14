@@ -261,7 +261,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
       // If we have an extracted response, all is well.
       if (isset($response->extracted)) {
-        $extraction = $file['filename'] . ': ' . $response->extracted;
+        $extraction = $response->extracted;
       }
     }
     catch (Exception $e) {
