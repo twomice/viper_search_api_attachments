@@ -106,7 +106,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     if (isset($file['fid'])) {
       // Load cached extraction based off file ID.
       $cid = 'cached_extraction_:' . $file['fid'];
-      $cached_extraction = cache_get($cid, $this->CACHE_TABLE);
+      $cached_extraction = cache_get($cid, self::CACHE_TABLE);
 
       // If we have a cache hit, there really is no need to continue.
       if (!empty($cached_extraction->data)) {
@@ -140,7 +140,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
     // If we have actual extracted data, write it to the cache.
     if ($extraction !== FALSE && isset($cid)) {
-      cache_set($cid, $extraction, $this->CACHE_TABLE);
+      cache_set($cid, $extraction, self::CACHE_TABLE);
     }
 
     return $extraction;
