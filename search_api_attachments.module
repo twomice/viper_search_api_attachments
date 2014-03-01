@@ -63,3 +63,10 @@ function search_api_attachments_file_delete($file) {
   $cid = 'cached_extraction_:' . $file['fid'];
   cache_clear_all($cid, 'cache_search_api_attachments');
 }
+
+/**
+* Implements hook_flush_caches().
+*/
+function search_api_attachments_flush_caches() {
+  return array('cache_search_api_attachments');
+}
