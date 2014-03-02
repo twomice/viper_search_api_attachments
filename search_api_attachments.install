@@ -16,7 +16,7 @@ function search_api_attachments_requirements($phase) {
     // We only need to test Java if we're using a local tika extractor.
     if (variable_get('search_api_attachments_extract_using', 'tika') == 'tika') {
       $temp = tempnam(file_directory_temp(), 'asa');
-      $cmd = 'java -version > ' . $temp . ' 2>&1';
+      $cmd = variable_get('search_api_attachments_java', 'java') . ' -version > ' . $temp . ' 2>&1';
       if (strpos(ini_get('extension_dir'), 'MAMP/')) {
         $cmd = 'export DYLD_LIBRARY_PATH=""; ' . $cmd;
       }
@@ -27,7 +27,7 @@ function search_api_attachments_requirements($phase) {
       if (!$found) {
         $requirements['search_api_attachments_java']  = array(
           'title' => $t('Java executable not found'),
-          'description' => $t('Could not execute a java command.  You may need to set the path of the correct java executable as the variable \'apachesolr_attachments_java\' in settings.php.'),
+          'description' => $t('Could not execute a java command.  You may need to set the path of the correct java executable as the variable \'search_api_attachments_java\' in settings.php.'),
           'severity' => REQUIREMENT_ERROR,
         );
       }
