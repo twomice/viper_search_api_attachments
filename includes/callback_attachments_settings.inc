@@ -217,7 +217,10 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
       $server = search_api_server_load($server_name, TRUE);
 
       // Make sure this is a solr server.
-      if ($server->class != 'search_api_solr_service') {
+      $class_info = search_api_get_service_info($server->class);
+      $classes = class_parents($class_info['class']);
+      $classes[$class_info['class']] = $class_info['class'];
+      if (!in_array('SearchApiSolrService', $classes)) {
         throw new SearchApiException(t('Server %server is not a Solr server, unable to extract file.', array(
           '%server' => $server_name,
         )));
@@ -227,7 +230,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
       $solr_connection = $server->getSolrConnection();
 
       // Path for our servlet request.
-      $servlet_path = 'update/extract';
+      $servlet_path = variable_get('search_api_attachments_extracting_servlet_path', 'update/extract');
 
       // Parameters for the extraction request.
       $params = array(

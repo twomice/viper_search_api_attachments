@@ -22,7 +22,7 @@ function search_api_attachments_settings_form($form, &$form_state) {
   );
   $form['search_api_attachments_tika_settings'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Tika settings'),
+    '#title' => t('Tika extraction settings'),
     '#description' => t('Required if using the "Tika" extraction method (above).'),
     '#collapsible' => TRUE,
   );
@@ -37,6 +37,18 @@ function search_api_attachments_settings_form($form, &$form_state) {
     '#title' => t('Tika jar file:'),
     '#default_value' => variable_get('search_api_attachments_tika_jar', 'tika-app-1.4.jar'),
     '#description' => t('The name of the tika CLI application jar file, e.g. tika-app-1.4.jar.'),
+  );
+  $form['search_api_attachments_solr_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Solr extraction settings'),
+    '#description' => t('Required if using the "Solr" extraction method (above).'),
+    '#collapsible' => TRUE,
+  );
+  $form['search_api_attachments_solr_settings']['search_api_attachments_extracting_servlet_path'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Solr extracting servlet path:'),
+    '#default_value' => variable_get('search_api_attachments_extracting_servlet_path', 'update/extract'),
+    '#description' => t('The path to the extracting servlet. E.g. update/extract or extract/tika'),
   );
   return system_settings_form($form);
 }

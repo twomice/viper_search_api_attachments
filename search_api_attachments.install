@@ -42,6 +42,7 @@ function search_api_attachments_requirements($phase) {
 function search_api_attachments_uninstall() {
   variable_del('search_api_attachments_tika_path');
   variable_del('search_api_attachments_tika_jar');
+  variable_del('search_api_attachments_extracting_servlet_path');
 }
 
 /**
