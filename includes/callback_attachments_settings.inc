@@ -191,10 +191,10 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     if (strpos(ini_get('extension_dir'), 'MAMP/')) {
       $cmd = 'export DYLD_LIBRARY_PATH=""; ' . $cmd;
     }
-    // Support UTF-8 commands: http://www.php.net/manual/pt_BR/function.shell-exec.php#85095
-    $cmd = "LANG=en_US.utf-8; $cmd";
     // Restore the locale.
     setlocale(LC_CTYPE, $backup_locale);
+    // Support UTF-8 commands: http://www.php.net/manual/en/function.shell-exec.php#85095
+    shell_exec("LANG=en_US.utf-8");
     return shell_exec($cmd);
   }
 
