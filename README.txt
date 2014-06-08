@@ -19,6 +19,8 @@ REQUIREMENTS
 Requires the ability to run java on your server and an installation of the
 Apache Tika library if you don't want to use the Solr build in extractor.
 
+PHP-iconv to index txt files.
+
 MODULE INSTALLATION
 -------------------
 Copy search_api_attachments into your modules folder

@@ -25,12 +25,27 @@ function search_api_attachments_requirements($phase) {
       $found = preg_match('/Runtime Environment/', $stderror);
 
       if (!$found) {
-        $requirements['search_api_attachments_java']  = array(
+        $requirements['search_api_attachments_java'] = array(
           'title' => $t('Java executable not found'),
           'description' => $t('Could not execute a java command.  You may need to set the path of the correct java executable as the variable \'search_api_attachments_java\' in settings.php.'),
           'severity' => REQUIREMENT_ERROR,
         );
       }
+    }
+
+    // Test if php-iconv is enabled on the server.
+    $requirements['search_api_attachments_iconv'] = array(
+      'title'       => $t('iconv php function'),
+      'description' => $t('Test if iconv php function is known. You will have an error when trying to index .txt files with search API attachments if this function is not present.'),
+    );
+
+    if (function_exists('iconv')) {
+      $requirements['search_api_attachments_iconv']['value'] = $t('Found');
+      $requirements['search_api_attachments_iconv']['severity'] = REQUIREMENT_OK;
+    }
+    else {
+      $requirements['search_api_attachments_iconv']['value'] = $t('Not found');
+      $requirements['search_api_attachments_iconv']['severity'] = REQUIREMENT_ERROR;
     }
   }
   return $requirements;
