@@ -33,6 +33,10 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
         foreach ($fields as $name => $field) {
           if (isset($item->$name)) {
             foreach ($item->$name as $value) {
+              // Limit to the max number of value per field.
+              if ($this->options['number_indexed'] != '0' && count($value) > $this->options['number_indexed']) {
+                $value = array_slice($value, 0, $this->options['number_indexed']);
+              }
               foreach ($value as $file) {
                 if (!in_array($file['filemime'], $exclude) && !$this->is_temporary($file)) {
                   $attachments = 'attachments_' . $name;
@@ -60,6 +64,13 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
       '#size' => 80,
       '#maxlength' => 255,
       '#description' => t('File extensions that are excluded from indexing. Separate extensions with a space and do not include the leading dot. Extensions are internally mapped to a MIME type, so it is not necessary to put variations that map to the same type (e.g. tif is sufficient for tif and tiff)'),
+    );
+    $form['number_indexed'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Number of file indexed per file field'),
+      '#default_value' => isset($this->options['number_indexed']) ? $this->options['number_indexed'] : '0',
+      '#size' => 5,
+      '#description' => t('The number of files to index per file field. The order of indexation is the weight in the widget. 0 for no restriction.'),
     );
     return $form;
   }
