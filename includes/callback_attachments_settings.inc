@@ -100,7 +100,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
   protected function getFileFields() {
     $ret = array();
     foreach (field_info_fields() as $name => $field) {
-      if ($field['type'] == 'file' && array_key_exists($this->index->item_type, $field['bundles'])) {
+      if ($field['type'] == 'file' && array_key_exists($this->index->getEntityType(), $field['bundles'])) {
         $ret[$name] = $field;
       }
     }
