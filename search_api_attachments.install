@@ -26,7 +26,8 @@ function search_api_attachments_requirements($phase) {
 
       if (!$found) {
         $requirements['search_api_attachments_java'] = array(
-          'title' => $t('Java executable not found'),
+          'title' => $t('Java'),
+          'value' => $t('Java executable not found'),
           'description' => $t('Could not execute a java command.  You may need to set the path of the correct java executable as the variable \'search_api_attachments_java\' in settings.php.'),
           'severity' => REQUIREMENT_ERROR,
         );
