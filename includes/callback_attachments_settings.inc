@@ -16,7 +16,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
     foreach (explode(' ', $this->options['excluded_extensions']) as $ext) {
       $exclude[$ext] = file_get_mimetype('dummy.' . $ext);
     }
-    if ($this->index->item_type == 'file') {
+    if ($this->index->getEntityType() == 'file') {
       foreach ($items as &$item) {
         $file = array();
         foreach ($item as $key => $value) {
@@ -77,7 +77,7 @@ class SearchApiAttachmentsAlterSettings extends SearchApiAbstractAlterCallback {
 
   public function propertyInfo() {
     $ret = array();
-    if ($this->index->item_type == 'file') {
+    if ($this->index->getEntityType() == 'file') {
       $ret['attachments_content'] = array(
         'label' => 'File content',
         'description' => 'File content',

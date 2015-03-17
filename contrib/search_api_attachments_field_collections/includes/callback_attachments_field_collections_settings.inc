@@ -30,7 +30,7 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
                 $file_fields[] = $field_name;
               }
             }
-            $collections = field_get_items($this->index->item_type, $item, $field_collection);
+            $collections = field_get_items($this->index->getEntityType(), $item, $field_collection);
             if ($collections) {
               $collection_item_ids = array();
               foreach ($collections as $field_collection_id) {
@@ -78,7 +78,7 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
    */
   public function propertyInfo() {
     $ret = array();
-    if ($this->index->item_type == 'file') {
+    if ($this->index->getEntityType() == 'file') {
       $ret['attachments_content'] = array(
         'label' => 'File content',
         'description' => 'File content',
