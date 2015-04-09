@@ -30,6 +30,9 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
                 $file_fields[] = $field_name;
               }
             }
+            if (empty($file_fields)) {
+              return;
+            }
             $collections = field_get_items($this->index->getEntityType(), $item, $field_collection);
             if ($collections) {
               $collection_item_ids = array();
@@ -37,10 +40,8 @@ class SearchApiAttachmentsFieldCollectionsAlterSettings extends SearchApiAttachm
                 $collection_item_ids[] = $field_collection_id['value'];
               }
               $collection_items = entity_load_multiple_by_name('field_collection_item', $collection_item_ids);
-            }
 
-            // Index the files content.
-            if (!empty($file_fields)) {
+              // Index the files content.
               foreach ($file_fields as $file_field) {
                 foreach ($collection_items as $collection_item) {
                   $field_collection_name = $collection_item->field_name;
