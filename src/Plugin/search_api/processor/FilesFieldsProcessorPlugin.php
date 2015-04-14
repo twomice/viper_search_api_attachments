@@ -3,6 +3,7 @@
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
 
@@ -17,6 +18,7 @@ use Drupal\search_api\Processor\ProcessorPluginBase;
  * )
  */
 class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
+
   /**
    * {@inheritdoc}
    */
@@ -24,48 +26,44 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     if ($datasource) {
       return;
     }
-
-    $definition = array(
-      'label' => $this->t('Search api attachments'),
-      'description' => $this->t('todo'),
-      'type' => 'string',
-    );
-    $properties['search_api_attachments'] = new DataDefinition($definition);
+    foreach ($this->getFileFields() as $field_name => $label) {
+      $definition = array(
+        'label' => $this->t('Search api attachments: !label', array('!label' => $label)),
+        'description' => $this->t('Search api attachments: !label', array('!label' => $label)),
+        'type' => 'string',
+      );
+      $properties['search_api_attachments_' . $field_name] = new DataDefinition($definition);
+    }
   }
+
   /**
    * {@inheritdoc}
    */
   public function preprocessIndexItems(array &$items) {
 
     foreach ($items as $item) {
-      if (!($field = $item->getField('search_api_attachments'))) {
-        continue;
+      foreach ($this->getFileFields() as $field_name => $label) {
+        if (!($field = $item->getField('search_api_attachments_' . $field_name))) {
+          continue;
+        }
+        $field->addValue('test test');
       }
-      $field->addValue('test test');
-      
-
     }
   }
-  
-    protected function getFileFields() {
+
+  protected function getFileFields() {
     $file_fields = array();
-    $field_entities = entity_load_multiple('field_config');
-    foreach ($field_entities as $field_entity) {
-      // Restrict to file fields.
-      if ($field_entity->get('field_type') == 'file') {
-        $field_name = $field_entity->get('field_name');
-        $file_fields[$field_name] = $field_name;
+    // Retrieve file fields of indexed bundles.
+    foreach ($this->getIndex()->getDatasources() as $datasource) {
+      foreach ($datasource->getPropertyDefinitions() as $property) {
+        if ($property instanceof FieldConfig) {
+          if ($property->field_type == 'file') {
+            $file_fields[$property->field_name] = $property->label;
+          }
+        }
       }
     }
     return $file_fields;
-
-//      
-//    $fields = array();
-//    foreach (field_info_fields() as $name => $field) {
-//      if ($field['type'] == 'file' && array_key_exists($this->index->getEntityType(), $field['bundles'])) {
-//        $ret[$name] = $field;
-//      }
-//    }
-//   
   }
+
 }
