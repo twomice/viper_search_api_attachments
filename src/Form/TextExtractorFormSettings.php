@@ -174,11 +174,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * @return array
    */
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
-    // Only render the extract method form if we did select an extraction method.
-    if ($form_state->getValue('extraction_method')) {
-      // We just need to return the relevant part of the form here.
-      return $form['text_extractor_config'];
-    }
+    //We just need to return the relevant part of the form here.
+    return $form['text_extractor_config'];
   }
 
 }
