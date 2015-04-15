@@ -165,7 +165,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $form['text_extractor_config']['#description'] = $this->getExtractionPluginInformations()['descriptions'][$extractor_plugin_id];
     $form['text_extractor_config']['#open'] = TRUE;
     if ($extractor_plugin_id) {
-      $configuration = $config->get('text_extractor_config');
+      $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
       $text_extractor_form = $extractor_plugin->buildConfigurationForm();
 

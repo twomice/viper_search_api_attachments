@@ -61,9 +61,10 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $extractor_plugin_id = $form_state->getValue('extraction_method');
     $config = \Drupal::configFactory()
         ->getEditable('search_api_attachments.admin_config');
-    $config->set('text_extractor_config', $this->configuration);
+    $config->set($extractor_plugin_id . '_configuration', $this->configuration);
     $config->save();
   }
 
