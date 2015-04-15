@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\search_api_attachments\Plugin\TextExtractor;
+namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
