@@ -3,5 +3,6 @@ name: 'Search API attachments'
 description: 'Provides a generic API for modules offering search capabilities.'
 core: 8.x
 package: Search
+configure: search_api_attachments.admin_form
 dependencies:
  - search_api
