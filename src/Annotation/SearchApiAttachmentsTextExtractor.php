@@ -8,7 +8,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class TextExtractor extends Plugin {
+class SearchApiAttachmentsTextExtractor extends Plugin {
 
   public $id;
   public $label;

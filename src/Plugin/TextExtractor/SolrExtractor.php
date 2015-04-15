@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
 
 /**
- * @TextExtractor(
+ * @SearchApiAttachmentsTextExtractor(
  *   id = "solr_extractor",
  *   label = @Translation("Solr Extractor"),
  *   description = @Translation("Adds Solr extractor support."),
