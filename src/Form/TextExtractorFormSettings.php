@@ -85,15 +85,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config(static::CONFIGNAME);
     // if it is from the configuration
-    if ($config->get('extraction_method') != '') {
-      $extractor_plugin_id = $config->get('extraction_method');
-    }
-    else {
-      // it is due ti the ajax.
-      $extractor_plugin_id = $form_state->getValue('extraction_method');
-    }
+    $extractor_plugin_id = $form_state->getValue('extraction_method');
     if ($extractor_plugin_id) {
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id);
       $extractor_plugin->validateConfigurationForm($form, $form_state);
