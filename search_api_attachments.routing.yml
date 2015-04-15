@@ -1,0 +1,7 @@
+search_api_attachments.admin_form:
+  path: '/search_api_attachments/settings'
+  defaults:
+    _form: '\Drupal\search_api_attachments\Form\TextExtractorFormSettings'
+    _title: 'TextExtractorFormSettings'
+  requirements:
+    _permission: 'administer site configuration'
