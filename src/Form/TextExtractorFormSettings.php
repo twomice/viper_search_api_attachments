@@ -10,6 +10,9 @@ use Drupal\search_api_attachments\TextExtractorPluginBase;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Configuration form.
+ */
 class TextExtractorFormSettings extends ConfigFormBase {
 
   /**
@@ -17,11 +20,17 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   const CONFIGNAME = 'search_api_attachments.admin_config';
 
+  /**
+   * {@inheritdoc}
+   */
   public function __construct(ConfigFactoryInterface $config_factory, TextExtractorPluginManager $textExtractorPluginManager) {
     parent::__construct($config_factory);
     $this->textExtractorPluginManager = $textExtractorPluginManager;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
         $container->get('config.factory'), $container->get('plugin.manager.search_api_attachments.text_extractor')
@@ -72,6 +81,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
     return $form;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config(static::CONFIGNAME);
     // if it is from the configuration
@@ -106,6 +118,13 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $config->save();
   }
 
+  /**
+   * Get definition of Extraction plugins from their annotation definition.
+   *
+   * @return array
+   *   Array with 'labels' and 'descriptions' as keys contaigning plugin ids
+   *   and their labels or descriptions.
+   */
   public function getExtractionPluginInformations() {
     $options = array(
       'labels' => array(),
@@ -118,6 +137,13 @@ class TextExtractorFormSettings extends ConfigFormBase {
     return $options;
   }
 
+  /**
+   * Subform that will be updated with Ajax to display the configuration of an
+   * extraction plugin method.
+   *
+   * @param array $form
+   * @param FormStateInterface $form_state
+   */
   public function buildTextExtractorConfigForm(array &$form, FormStateInterface $form_state) {
     $form['text_extractor_config'] = array(
       '#type' => 'container',
@@ -147,11 +173,15 @@ class TextExtractorFormSettings extends ConfigFormBase {
     }
   }
 
+  /**
+   * Ajax callback.
+   *
+   * @param array $form
+   * @param FormStateInterface $form_state
+   * @return array
+   */
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
-    // The work is already done in form(), where we rebuild the entity according
-    // to the current form values and then create the backend configuration form
-    // based on that. So we just need to return the relevant part of the form
-    // here.
+    //We just need to return the relevant part of the form here.
     return $form['text_extractor_config'];
   }
 
