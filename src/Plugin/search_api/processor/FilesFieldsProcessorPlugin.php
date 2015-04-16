@@ -80,9 +80,24 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         $extractor_plugin_id = $config->get('extraction_method');
 
         if ($extractor_plugin_id) {
-          $file = array();
+          // Need to retrieve the files.
+          $entity = $item->getOriginalObject()->getValue();
+          $filefield_values = $entity->get($field_name)->getValue();
+
+          $fids = array();
+          foreach ($filefield_values as $filefield_value) {
+            $fids[] = $filefield_value['target_id'];
+          }
+
+          // Retrieve the files.
+          $files = entity_load_multiple('file', $fids);
           $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id);
-          $extraction = $extractor_plugin->extract($file);
+          $extraction = '';
+          foreach ($files as $file) {
+            if (file_exists($file->getFileUri())) {
+              $extraction .= $extractor_plugin->extract($file);
+            }
+          }
           $field->addValue($extraction);
         }
       }

@@ -2,8 +2,10 @@
 
 namespace Drupal\search_api_attachments;
 
+use Drupal;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginBase;
+use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 
 /**
  * Base class for plugins able to extract file content.
@@ -62,7 +64,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $extractor_plugin_id = $form_state->getValue('extraction_method');
-    $config = \Drupal::configFactory()
+    $config = Drupal::configFactory()
         ->getEditable('search_api_attachments.admin_config');
     $config->set($extractor_plugin_id . '_configuration', $this->configuration);
     $config->save();
@@ -75,4 +77,24 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
     return array();
   }
 
+  /**
+   * Helper method to get the real path from an uri.
+   *
+   * @param $uri
+   *   The URI of the file, e.g. public://directory/file.jpg.
+   * @return mixed
+   *   The real path to the file if it is a local file. An URL otherwise.
+   */
+  public function getRealpath($uri) {
+    $stream_wrapper_manager = \Drupal::service('stream_wrapper_manager');
+    $wrapper = $stream_wrapper_manager->getViaUri($uri);
+    $scheme = file_uri_scheme($uri);
+    $local_wrappers = $stream_wrapper_manager->getWrappers(StreamWrapperInterface::LOCAL);
+    if (in_array($scheme, array_keys($local_wrappers))) {
+      return $wrapper->realpath();
+    }
+    else {
+      return $wrapper->getExternalUrl();
+    }
+  }
 }
