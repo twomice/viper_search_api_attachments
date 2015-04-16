@@ -2,10 +2,13 @@
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
+use Drupal;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
+use Drupal\search_api_attachments\TextExtractorPluginManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @SearchApiProcessor(
@@ -18,6 +21,32 @@ use Drupal\search_api\Processor\ProcessorPluginBase;
  * )
  */
 class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
+
+  /**
+   * Name of the config being edited.
+   */
+  const CONFIGNAME = 'search_api_attachments.admin_config';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $textExtractorPluginManager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->textExtractorPluginManager = $textExtractorPluginManager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    $plugin = new static($configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'));
+
+    /** @var \Drupal\Core\StringTranslation\TranslationInterface $translation */
+    $translation = $container->get('string_translation');
+    $plugin->setStringTranslation($translation);
+
+    return $plugin;
+  }
 
   /**
    * {@inheritdoc}
@@ -46,7 +75,16 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         if (!($field = $item->getField('search_api_attachments_' . $field_name))) {
           continue;
         }
-        $field->addValue('test test');
+        $config = Drupal::configFactory()
+            ->getEditable(static::CONFIGNAME);
+        $extractor_plugin_id = $config->get('extraction_method');
+
+        if ($extractor_plugin_id) {
+          $file = array();
+          $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id);
+          $extraction = $extractor_plugin->extract($file);
+          $field->addValue($extraction);
+        }
       }
     }
   }

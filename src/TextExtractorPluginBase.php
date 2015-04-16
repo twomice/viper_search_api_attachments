@@ -30,7 +30,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * {@inheritdoc}
    */
-  public function extract($method, $file) {
+  public function extract($file) {
     $filename = $file;
     $mode = 'r';
     return fopen($filename, $mode);

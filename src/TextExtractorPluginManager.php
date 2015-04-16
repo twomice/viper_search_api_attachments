@@ -12,7 +12,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
  * @ingroup plugin_api
  */
 class TextExtractorPluginManager extends DefaultPluginManager {
-  
+
   /**
    * {@inheritdoc}
    */

@@ -17,7 +17,7 @@ class TikaExtractor extends TextExtractorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function extract($method, $file) {
+  public function extract($file) {
     return 'tika tika tika';
   }
 

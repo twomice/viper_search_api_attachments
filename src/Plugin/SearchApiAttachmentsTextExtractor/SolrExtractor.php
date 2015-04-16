@@ -17,7 +17,7 @@ class SolrExtractor extends TextExtractorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function extract($method, $file) {
+  public function extract($file) {
     return 'solr solr solr';
   }
 

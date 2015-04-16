@@ -12,17 +12,16 @@ use Drupal\Component\Plugin\ConfigurablePluginInterface;
  * @ingroup plugin_api
  */
 interface TextExtractorPluginInterface extends PluginFormInterface, ConfigurablePluginInterface {
+
   /**
    * Extract method.
    *
-   * @param string $method
-   *   The extraction method.
    * @param type $file
    *   The file object.
    *
    * @return string
    *   Teh file extracted content.
    */
-  public function extract($method, $file);
+  public function extract($file);
 
 }

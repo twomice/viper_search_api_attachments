@@ -106,7 +106,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $extractor_plugin->submitConfigurationForm($form, $form_state);
     }
     $config = \Drupal::configFactory()
-        ->getEditable('search_api_attachments.admin_config');
+        ->getEditable(static::CONFIGNAME);
     $config->set('extraction_method', $extractor_plugin_id);
     $config->save();
   }

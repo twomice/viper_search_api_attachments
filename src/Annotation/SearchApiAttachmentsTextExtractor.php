@@ -12,6 +12,7 @@ use Drupal\Component\Annotation\Plugin;
  * @Annotation
  */
 class SearchApiAttachmentsTextExtractor extends Plugin {
+
   /**
    * The plugin id.
    *
