@@ -78,7 +78,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         $config = Drupal::configFactory()
             ->getEditable(static::CONFIGNAME);
         $extractor_plugin_id = $config->get('extraction_method');
-
+        $configuration = $config->get($extractor_plugin_id . '_configuration');
         if ($extractor_plugin_id) {
           // Need to retrieve the files.
           $entity = $item->getOriginalObject()->getValue();
@@ -91,7 +91,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
 
           // Retrieve the files.
           $files = entity_load_multiple('file', $fids);
-          $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id);
+          $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
           $extraction = '';
           foreach ($files as $file) {
             if (file_exists($file->getFileUri())) {

@@ -59,8 +59,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
 
     $form['extraction_method'] = array(
       '#type' => 'select',
-      '#title' => $this->t('Extraction Method'),
-      '#description' => $this->t('todo'),
+      '#title' => $this->t('Extraction method'),
+      '#description' => $this->t('Select the extraction method you want to use.'),
       '#empty_value' => '',
       '#options' => $this->getExtractionPluginInformations()['labels'],
       '#default_value' => $config->get('extraction_method'),

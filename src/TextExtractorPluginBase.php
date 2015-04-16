@@ -97,4 +97,5 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
       return $wrapper->getExternalUrl();
     }
   }
+
 }

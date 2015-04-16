@@ -25,13 +25,9 @@ class TikaExtractor extends TextExtractorPluginBase {
    *
    * @throws \Exception
    */
- public function extract($file) {
+  public function extract($file) {
     $filepath = $this->getRealpath($file->getFileUri());
-    // TODO: Remove the hardcoded path to tika.
-    $tika = realpath('/data/sites/drupal8/tika-app-1.7.jar');
-    if (!($tika) || !is_file($tika)) {
-      throw new \Exception(t('Invalid path or filename for tika application jar.'));
-    }
+    $tika = realpath($this->configuration['tika_path']);
     // UTF-8 multibyte characters will be stripped by escapeshellargs() for the
     // default C-locale.
     // So temporarily set the locale to UTF-8 so that the filepath remains valid.
@@ -63,7 +59,7 @@ class TikaExtractor extends TextExtractorPluginBase {
     $form['tika_path'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to Tika .jar file'),
-      '#description' => $this->t('Enter the full path to tika executable jar file'),
+      '#description' => $this->t('Enter the full path to tika executable jar file. For example: "/var/apache-tika/tika-app-1.7.jar".'),
       '#default_value' => $this->configuration['tika_path'],
     );
     return $form;
@@ -74,8 +70,8 @@ class TikaExtractor extends TextExtractorPluginBase {
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    if (isset($values['text_extractor_config']['tika_path']) && $values['text_extractor_config']['tika_path'] != 'toto') {
-      $form_state->setError($form['text_extractor_config']['tika_path'], $this->t('it should be toto'));
+    if (isset($values['text_extractor_config']['tika_path']) && !file_exists($values['text_extractor_config']['tika_path'])) {
+      $form_state->setError($form['text_extractor_config']['tika_path'], $this->t('Invalid path or filename for tika application jar.'));
     }
   }
 
