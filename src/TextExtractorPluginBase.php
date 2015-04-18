@@ -15,6 +15,11 @@ use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 abstract class TextExtractorPluginBase extends PluginBase implements TextExtractorPluginInterface {
 
   /**
+   * Name of the config being edited.
+   */
+  const CONFIGNAME = 'search_api_attachments.admin_config';
+
+  /**
    * {@inheritdoc}
    */
   function __construct(array $configuration, $plugin_id, $plugin_definition) {
@@ -65,7 +70,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $extractor_plugin_id = $form_state->getValue('extraction_method');
     $config = Drupal::configFactory()
-        ->getEditable('search_api_attachments.admin_config');
+        ->getEditable(static::CONFIGNAME);
     $config->set($extractor_plugin_id . '_configuration', $this->configuration);
     $config->save();
   }

@@ -62,6 +62,7 @@ class TikaExtractor extends TextExtractorPluginBase {
       '#description' => $this->t('Enter the full path to tika executable jar file. For example: "/var/apache-tika/tika-app-1.7.jar".'),
       '#default_value' => $this->configuration['tika_path'],
     );
+    //@todo test connection live
     return $form;
   }
 
