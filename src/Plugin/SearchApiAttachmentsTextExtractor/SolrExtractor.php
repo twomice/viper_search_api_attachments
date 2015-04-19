@@ -2,9 +2,11 @@
 
 namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\search_api_attachments\TextExtractorPluginBase;
 use Drupal\search_api\Entity\Server;
+use Drupal\search_api_attachments\TextExtractorPluginBase;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 /**
  * @SearchApiAttachmentsTextExtractor(
@@ -40,8 +42,15 @@ class SolrExtractor extends TextExtractorPluginBase {
 
     $response = $result->getResponse();
     //dpm($response->getHeaders());
-    $body = $response->getBody();
-    //@todo this is returning json data, we need to go deeper on it.
+    $json_data = $response->getBody();
+    $array_data = Json::decode($json_data);
+    // $array_data contains json array with two keys : [filename] that contains the
+    // extracted text we need and [filename]_metadata that contains some extra
+    // metadata.
+    $xml_data = $array_data[$filepath];
+    $xmlencoder = new XmlEncoder();
+    $dom_data = $xmlencoder->decode($xml_data)['body']['div']['p'];
+    $body = implode(' ', $dom_data);
 
     return $body;
   }
