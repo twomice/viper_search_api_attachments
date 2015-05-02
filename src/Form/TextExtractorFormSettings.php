@@ -73,9 +73,13 @@ class TextExtractorFormSettings extends ConfigFormBase {
     );
 
     $this->buildTextExtractorConfigForm($form, $form_state);
+    $trigger = $form_state->getTriggeringElement();
+    if (!empty($trigger['#is_button'])) {
+      $this->buildTextExtractorTestResultForm($form, $form_state);
+    }
     $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => $this->t('Submit'),
+      '#value' => $this->t('Submit and test extraction'),
     );
     return $form;
   }
@@ -111,6 +115,29 @@ class TextExtractorFormSettings extends ConfigFormBase {
         ->getEditable(static::CONFIGNAME);
     $config->set('extraction_method', $extractor_plugin_id);
     $config->save();
+    $account = \Drupal::currentUser();
+    $contents = $this->t('Congratulations, the extraction seems working !');
+    $filepath = 'public://search_api_attachments_test_extraction.txt';
+    file_put_contents($filepath, $contents);
+
+    $file = entity_create('file', array(
+      'uri' => $filepath,
+      'uid' => $account->id(),
+    ));
+    $file->save();
+    $extracted_data = $extractor_plugin->extract($file);
+    if ($extracted_data == '') {
+      $data = $this->t("Unfortunately, the extraction doesn't seem to work with this configuration !");
+    }
+    else {
+      $data = $this->t('Extracted data: %extracted_data', array('%extracted_data' => $extracted_data));
+    }
+    $storage = array(
+      'extracted_test_text' => $data,
+    );
+    $file->delete();
+    $form_state->setStorage($storage);
+    $form_state->setRebuild();
   }
 
   /**
@@ -173,6 +200,31 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $text_extractor_form = $extractor_plugin->buildConfigurationForm();
 
       $form['text_extractor_config'] += $text_extractor_form;
+    }
+  }
+
+  /**
+   * Subform to test the configuration of an
+   * extraction plugin method.
+   *
+   * @param array $form
+   * @param FormStateInterface $form_state
+   */
+  public function buildTextExtractorTestResultForm(array &$form, FormStateInterface $form_state) {
+    if (isset($form['text_extractor_config'])) {
+      $form['text_extractor_config']['test_result']['#type'] = 'details';
+      $form['text_extractor_config']['test_result']['#title'] = $this->t('Test extractor %plugin', array('%plugin' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]));
+      $form['text_extractor_config']['test_result']['#open'] = TRUE;
+
+      $storage = $form_state->getStorage();
+      if (empty($storage)) {
+        // Put the initial thing into the storage
+        $storage = array(
+          'extracted_test_text' => $this->t("Extraction doesn't seem to work"),
+        );
+        $form_state->setStorage($storage);
+      }
+      $form['text_extractor_config']['test_result']['test_file_path_result']['#markup'] = $storage['extracted_test_text'];
     }
   }
 
