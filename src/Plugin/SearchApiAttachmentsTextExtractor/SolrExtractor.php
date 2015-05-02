@@ -49,7 +49,8 @@ class SolrExtractor extends TextExtractorPluginBase {
     // metadata.
     $xml_data = $array_data[$filepath];
     $xmlencoder = new XmlEncoder();
-    $dom_data = $xmlencoder->decode($xml_data)['body']['div']['p'];
+    $dom_data = $xmlencoder->decode($xml_data);
+    $dom_data = $dom_data['body']['div']['p'];
     $body = implode(' ', $dom_data);
 
     return $body;
