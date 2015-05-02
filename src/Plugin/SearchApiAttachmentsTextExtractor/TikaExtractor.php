@@ -59,7 +59,7 @@ class TikaExtractor extends TextExtractorPluginBase {
     $form['tika_path'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to Tika .jar file'),
-      '#description' => $this->t('Enter the full path to tika executable jar file. For example: "/var/apache-tika/tika-app-1.7.jar".'),
+      '#description' => $this->t('Enter the full path to tika executable jar file. For example: "/var/apache-tika/tika-app-1.8.jar".'),
       '#default_value' => $this->configuration['tika_path'],
     );
     return $form;
@@ -75,12 +75,11 @@ class TikaExtractor extends TextExtractorPluginBase {
         $form_state->setError($form['text_extractor_config']['tika_path'], $this->t('Invalid path or filename %path for tika application jar.', array('%path' => $values['text_extractor_config']['tika_path'])));
       }
       else {
-        $cmd = escapeshellcmd('java') . ' -jar ' . escapeshellarg($this->configuration['tika_path']) . ' -V';
+        $cmd = escapeshellcmd('java') . ' -jar ' . escapeshellarg($values['text_extractor_config']['tika_path']) . ' -V';
         exec($cmd, $output, $return_code);
         // $return_code = 1 if it fails. 0 instead.
         if ($return_code) {
-
-          drupal_set_message(t('Tika could not be reached and executed.'), 'error');
+          $form_state->setError($form['text_extractor_config']['tika_path'], $this->t('Tika could not be reached and executed.'));
         }
         else {
           drupal_set_message(t('Tika can be reached and be executed'));
