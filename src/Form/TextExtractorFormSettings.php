@@ -2,7 +2,7 @@
 
 namespace Drupal\search_api_attachments\Form;
 
-use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -153,8 +153,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
       'descriptions' => array()
     );
     foreach ($this->textExtractorPluginManager->getDefinitions() as $plugin_id => $plugin_definition) {
-      $options['labels'][$plugin_id] = String::checkPlain($plugin_definition['label']);
-      $options['descriptions'][$plugin_id] = String::checkPlain($plugin_definition['description']);
+      $options['labels'][$plugin_id] = SafeMarkup::checkPlain($plugin_definition['label']);
+      $options['descriptions'][$plugin_id] = SafeMarkup::checkPlain($plugin_definition['description']);
     }
     return $options;
   }
