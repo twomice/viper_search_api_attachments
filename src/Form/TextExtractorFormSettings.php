@@ -115,17 +115,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
         ->getEditable(static::CONFIGNAME);
     $config->set('extraction_method', $extractor_plugin_id);
     $config->save();
-    $account = \Drupal::currentUser();
-    $contents = $this->t('Congratulations, the extraction seems working !');
-    $filepath = 'public://search_api_attachments_test_extraction.txt';
-    file_put_contents($filepath, $contents);
-
-    $file = entity_create('file', array(
-      'uri' => $filepath,
-      'uid' => $account->id(),
-    ));
-    $file->save();
+    $file = $this->getTestFile();
     $extracted_data = $extractor_plugin->extract($file);
+    $file->delete();
     if ($extracted_data == '') {
       $data = $this->t("Unfortunately, the extraction doesn't seem to work with this configuration !");
     }
@@ -135,7 +127,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $storage = array(
       'extracted_test_text' => $data,
     );
-    $file->delete();
+
     $form_state->setStorage($storage);
     $form_state->setRebuild();
   }
@@ -238,6 +230,45 @@ class TextExtractorFormSettings extends ConfigFormBase {
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
     //We just need to return the relevant part of the form here.
     return $form['text_extractor_config'];
+  }
+
+  /**
+   * Helper method to get/create a html test file and extract its data.
+   * The file created is then deleted after successful extraction.
+   * @return object $file
+   */
+  public function getTestFile() {
+    $account = \Drupal::currentUser();
+    $contents = '
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Congratulations !</title>
+</head>
+<body>
+<div>
+<p>' . $this->t('The extraction seems working !') . '</p>
+<p>' . $this->t('Yay !') . '</p>
+</div>
+</body>';
+
+    $filepath = 'public://search_api_attachments_test_extraction.html';
+    $values = array('uri' => $filepath);
+    $file = entity_load_multiple_by_properties('file', $values);
+    if (empty($file)) {
+      file_put_contents($filepath, $contents);
+
+      $file = entity_create('file', array(
+        'uri' => $filepath,
+        'uid' => $account->id(),
+      ));
+      $file->save();
+    }
+    else {
+      $file = reset($file);
+    }
+    return $file;
   }
 
 }
