@@ -42,4 +42,21 @@ Make sure to configure it as explained in its README.txt
 Create at least one solr server
 Now you can choose it from /admin/config/search/search_api_attachments
 
-Note: For Solr extraction to work, we need solarium in 3.3.0 or greater.
+Note 1: For Solr extraction to work, we need solarium in 3.3.0 or greater.
+Note 2: "lazy loading error"
+If you obtain this error, you may need some extra configuration of solr:
+Per example with solr 4.10.4, in addition to the configuration suggested in
+search_api_solr README.txt, you need to update your solrconfig.xml file
+(full path can look like example/solr/collection1/conf/solrconfig.xml)
+Change the /update/extract request Handler class like this :
+
+   <requestHandler name="/update/extract"
+                   class="org.apache.solr.handler.extraction.ExtractingRequestHandler" >
+
+This means that you delete this part:
+-                  startup="lazy"
+-                  class="solr.extraction.ExtractingRequestHandler" >
+
+Then in example folder:
+cp -r ../contrib/extraction/lib solr/collection1/lib
+cp ../dist/solr-cell-4.10.4.jar solr/collection1/lib/
