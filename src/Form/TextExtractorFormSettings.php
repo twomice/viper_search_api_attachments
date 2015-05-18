@@ -6,7 +6,6 @@ use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\search_api_attachments\TextExtractorPluginBase;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -89,7 +88,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config(static::CONFIGNAME);
-    // if it is from the configuration
+    // If it is from the configuration.
     $extractor_plugin_id = $form_state->getValue('extraction_method');
     if ($extractor_plugin_id) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
@@ -103,23 +102,26 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config(static::CONFIGNAME);
-    // it is due to the ajax.
-    $extractor_plugin_id = $form_state->getValue('extraction_method');
 
+    // It is due to the ajax.
+    $extractor_plugin_id = $form_state->getValue('extraction_method');
     if ($extractor_plugin_id) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
       $extractor_plugin->submitConfigurationForm($form, $form_state);
     }
-    $config = \Drupal::configFactory()
-        ->getEditable(static::CONFIGNAME);
+
+    // Set the extraction method variable.
+    $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
     $config->set('extraction_method', $extractor_plugin_id);
     $config->save();
+
+    // Test the extraction.
     $file = $this->getTestFile();
     $extracted_data = $extractor_plugin->extract($file);
     $file->delete();
     if ($extracted_data == '') {
-      $data = $this->t("Unfortunately, the extraction doesn't seem to work with this configuration !");
+      $data = $this->t("Unfortunately, the extraction doesn't seem to work with this configuration!");
     }
     else {
       $data = $this->t('Extracted data: %extracted_data', array('%extracted_data' => $extracted_data));
@@ -136,7 +138,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * Get definition of Extraction plugins from their annotation definition.
    *
    * @return array
-   *   Array with 'labels' and 'descriptions' as keys contaigning plugin ids
+   *   Array with 'labels' and 'descriptions' as keys containing plugin ids
    *   and their labels or descriptions.
    */
   public function getExtractionPluginInformations() {
@@ -168,7 +170,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     );
     $config = $this->config(static::CONFIGNAME);
     if ($form_state->getValue('extraction_method') != '') {
-      // it is due to the ajax.
+      // It is due to the ajax.
       $extractor_plugin_id = $form_state->getValue('extraction_method');
     }
     else {
@@ -179,8 +181,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $form['text_extractor_config']['#title'] = $this->t('Configure extractor %plugin', array('%plugin' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]));
     $form['text_extractor_config']['#description'] = $this->getExtractionPluginInformations()['descriptions'][$extractor_plugin_id];
     $form['text_extractor_config']['#open'] = TRUE;
-    // If the form is submitted with ajax and the empty value chosed or if there
-    // is no configuration yet and no extraction method was chosen in the form.
+    // If the form is submitted with ajax and the empty value is chosen or if
+    // there is no configuration yet and no extraction method was chosen in the
+    // form.
     if ($ajax_submitted_empty_value || !$extractor_plugin_id) {
       $form['text_extractor_config']['#title'] = $this->t('Please make a choice');
       $form['text_extractor_config']['#description'] = $this->t('Please choose an extraction method in the list above.');
@@ -204,15 +207,16 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public function buildTextExtractorTestResultForm(array &$form, FormStateInterface $form_state) {
     if (isset($form['text_extractor_config'])) {
+      $extractor_plugin_id = $form_state->getValue('extraction_method');
       $form['text_extractor_config']['test_result']['#type'] = 'details';
       $form['text_extractor_config']['test_result']['#title'] = $this->t('Test extractor %plugin', array('%plugin' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]));
       $form['text_extractor_config']['test_result']['#open'] = TRUE;
 
       $storage = $form_state->getStorage();
       if (empty($storage)) {
-        // Put the initial thing into the storage
+        // Put the initial thing into the storage.
         $storage = array(
-          'extracted_test_text' => $this->t("Extraction doesn't seem to work"),
+          'extracted_test_text' => $this->t("Extraction doesn't seem to work."),
         );
         $form_state->setStorage($storage);
       }
@@ -228,13 +232,14 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * @return array
    */
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
-    //We just need to return the relevant part of the form here.
+    // We just need to return the relevant part of the form here.
     return $form['text_extractor_config'];
   }
 
   /**
    * Helper method to get/create a html test file and extract its data.
    * The file created is then deleted after successful extraction.
+   *
    * @return object $file
    */
   public function getTestFile() {
@@ -244,19 +249,19 @@ class TextExtractorFormSettings extends ConfigFormBase {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Congratulations !</title>
+<title>Congratulations!</title>
 </head>
 <body>
 <div>
-<p>' . $this->t('The extraction seems working !') . '</p>
-<p>' . $this->t('Yay !') . '</p>
+<p>' . $this->t('The extraction seems working!') . '</p>
+<p>' . $this->t('Yay!') . '</p>
 </div>
 </body>';
-
     $filepath = 'public://search_api_attachments_test_extraction.html';
     $values = array('uri' => $filepath);
     $file = entity_load_multiple_by_properties('file', $values);
     if (empty($file)) {
+      // Create the file if it doesn't already exist.
       file_put_contents($filepath, $contents);
 
       $file = entity_create('file', array(

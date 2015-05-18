@@ -4,7 +4,6 @@ namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\search_api\Entity\Server;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
@@ -35,7 +34,7 @@ class SolrExtractor extends TextExtractorPluginBase {
     $client = $backend->getSolrConnection();
     // Create the Query.
     $query = $client->createExtract();
-    //setExtractOnly is only available in solarium 3.3.0 and up.
+    // setExtractOnly is only available in solarium 3.3.0 and up.
     $query->setExtractOnly(TRUE);
     $query->setFile($filepath);
     // Execute the query.
@@ -43,13 +42,13 @@ class SolrExtractor extends TextExtractorPluginBase {
     $response = $result->getResponse();
     $json_data = $response->getBody();
     $array_data = Json::decode($json_data);
-    // $array_data contains json array with two keys : [filename] that contains the
-    // extracted text we need and [filename]_metadata that contains some extra
-    // metadata.
+    // $array_data contains json array with two keys : [filename] that contains
+    // the extracted text we need and [filename]_metadata that contains some
+    // extra metadata.
     $xml_data = $array_data[$filepath];
     // We need to get only what is in body tag.
     $xmlencoder = new XmlEncoder();
-    $dom_data = $xmlencoder->decode($xml_data);
+    $dom_data = $xmlencoder->decode($xml_data, 'xml');
     $dom_data = $dom_data['body'];
 
     $htmlencoder = new XmlEncoder();

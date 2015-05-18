@@ -2,7 +2,6 @@
 
 namespace Drupal\search_api_attachments;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Component\Plugin\ConfigurablePluginInterface;
 
@@ -16,11 +15,11 @@ interface TextExtractorPluginInterface extends PluginFormInterface, Configurable
   /**
    * Extract method.
    *
-   * @param type $file
+   * @param $file
    *   The file object.
    *
    * @return string
-   *   Teh file extracted content.
+   *   The file extracted content.
    */
   public function extract($file);
 

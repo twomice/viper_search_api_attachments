@@ -30,7 +30,8 @@ class TikaExtractor extends TextExtractorPluginBase {
     $tika = realpath($this->configuration['tika_path']);
     // UTF-8 multibyte characters will be stripped by escapeshellargs() for the
     // default C-locale.
-    // So temporarily set the locale to UTF-8 so that the filepath remains valid.
+    // So temporarily set the locale to UTF-8 so that the filepath remains
+    // valid.
     $backup_locale = setlocale(LC_CTYPE, '0');
     setlocale(LC_CTYPE, 'en_US.UTF-8');
     $param = '';

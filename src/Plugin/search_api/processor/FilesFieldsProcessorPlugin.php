@@ -75,8 +75,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         if (!($field = $item->getField('search_api_attachments_' . $field_name))) {
           continue;
         }
-        $config = Drupal::configFactory()
-            ->getEditable(static::CONFIGNAME);
+        $config = Drupal::configFactory()->getEditable(static::CONFIGNAME);
         $extractor_plugin_id = $config->get('extraction_method');
         $configuration = $config->get($extractor_plugin_id . '_configuration');
         if ($extractor_plugin_id) {
@@ -104,14 +103,20 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     }
   }
 
+  /**
+   * Helper method to get the file fields of indexed bundles.
+   *
+   * @return array
+   *   An array of file fields. With field name as key and label as value.
+   */
   protected function getFileFields() {
     $file_fields = array();
     // Retrieve file fields of indexed bundles.
     foreach ($this->getIndex()->getDatasources() as $datasource) {
       foreach ($datasource->getPropertyDefinitions() as $property) {
         if ($property instanceof FieldConfig) {
-          if ($property->field_type == 'file') {
-            $file_fields[$property->field_name] = $property->label;
+          if ($property->get('field_type') == 'file') {
+            $file_fields[$property->get('field_name')] = $property->get('label');
           }
         }
       }
