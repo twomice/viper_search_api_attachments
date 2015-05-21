@@ -2,7 +2,8 @@
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
-use Drupal;
+use Drupal\Core\File\MimeType\MimeTypeGuesser;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\search_api\Datasource\DatasourceInterface;
@@ -28,18 +29,36 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   const CONFIGNAME = 'search_api_attachments.admin_config';
 
   /**
+   * The plugin manager for our text extractor.
+   *
+   * @var \Drupal\search_api_attachments\TextExtractorPluginManager
+   */
+  protected $textExtractorPluginManager;
+
+  /**
+   * The mime type guesser service.
+   *
+   * @var \Drupal\Core\File\MimeType\MimeTypeGuesser
+   */
+  protected $mimeGesser;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $textExtractorPluginManager) {
+  public function __construct(
+  array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $textExtractorPluginManager, MimeTypeGuesser $mimeGesser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $textExtractorPluginManager;
+    $this->mimeGesser = $mimeGesser;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $plugin = new static($configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'));
+    $plugin = new static(
+        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('file.mime_type.guesser')
+    );
 
     /** @var \Drupal\Core\StringTranslation\TranslationInterface $translation */
     $translation = $container->get('string_translation');
@@ -75,7 +94,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         if (!($field = $item->getField('search_api_attachments_' . $field_name))) {
           continue;
         }
-        $config = Drupal::configFactory()->getEditable(static::CONFIGNAME);
+        $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
         $extractor_plugin_id = $config->get('extraction_method');
         $configuration = $config->get($extractor_plugin_id . '_configuration');
         if ($extractor_plugin_id) {
@@ -93,7 +112,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
           $extraction = '';
           foreach ($files as $file) {
-            if (file_exists($file->getFileUri())) {
+            if ($this->isFileIndexable($file)) {
               $extraction .= $extractor_plugin->extract($file);
             }
           }
@@ -101,6 +120,21 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         }
       }
     }
+  }
+
+  /**
+   * Check if the file is allowed to be indexed.
+   *
+   * @param $file
+   *   A file object.
+   * @return boolean
+   */
+  public function isFileIndexable($file) {
+    // File should exist in disc.
+    $exists_in_disc = file_exists($file->getFileUri());
+    // File should have a mime type that is allowed.
+    $mime_allowed = !in_array($file->getMimeType(), $this->getExcludedMimes());
+    return $exists_in_disc && $mime_allowed;
   }
 
   /**
@@ -122,6 +156,82 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       }
     }
     return $file_fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+    if (isset($this->configuration['excluded_extensions'])) {
+      $default_excluded_extensions = $this->configuration['excluded_extensions'];
+    }
+    else {
+      $default_excluded_extensions = $this->defaultExcludedExtensions();
+    }
+    $form['excluded_extensions'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Excluded file extensions'),
+      '#default_value' => $default_excluded_extensions,
+      '#size' => 80,
+      '#maxlength' => 255,
+      '#description' => $this->t('File extensions that are excluded from indexing. Separate extensions with a space and do not include the leading dot.<br />Example: "aif art avi bmp gif ico mov oga ogv png psd ra ram rgb flv"<br />Extensions are internally mapped to a MIME type, so it is not necessary to put variations that map to the same type (e.g. tif is sufficient for tif and tiff)'),
+    );
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::submitConfigurationForm($form, $form_state);
+    $excluded_extensions = $form_state->getValue('excluded_extensions');
+    $excluded_extensions_array = explode(' ', $excluded_extensions);
+    $excluded_mimes_array = $this->getExcludedMimes($excluded_extensions_array);
+    $excluded_mimes_string = implode(' ', $excluded_mimes_array);
+    $this->setConfiguration($this->getConfiguration() + array('excluded_mimes' => $excluded_mimes_string));
+  }
+
+  /**
+   * Default excluded extensions.
+   *
+   * @return string
+   *   string of file extensions separated by a space.
+   */
+  public function defaultExcludedExtensions() {
+    $excluded = array('aif', 'art', 'avi', 'bmp', 'gif', 'ico', 'mov', 'oga', 'ogv', 'png', 'psd', 'ra', 'ram', 'rgb', 'flv');
+    return implode(' ', $excluded);
+  }
+
+  /**
+   * Get a corresponding array of excluded mime types from a space separated
+   * string of file extensiosn.
+   *
+   * @param string $extensions
+   *   If it's not null, the return will correspond to the extensions.
+   *   If it is null,the return will correspond to the default excluded extensions.
+   * @return array
+   */
+  public function getExcludedMimes($extensions = NULL) {
+    if (!$extensions && isset($this->configuration['excluded_mimes'])) {
+      $excluded_mimes_string = $this->configuration['excluded_mimes'];
+      $excluded_mimes = explode(' ', $excluded_mimes_string);
+    }
+    else {
+
+      if (!$extensions) {
+        $extensions = $this->defaultExcludedExtensions();
+      }
+      $excluded_mimes = array();
+      foreach ($extensions as $extension) {
+        $excluded_mimes[] = $this->mimeGesser->guess('dummy.' . $extension);
+      }
+    }
+    // Ensure we get an array of unique mime values because many extension can
+    // map the the same mime type.
+    $excluded_mimes = array_combine($excluded_mimes, $excluded_mimes);
+    return array_keys($excluded_mimes);
   }
 
 }
