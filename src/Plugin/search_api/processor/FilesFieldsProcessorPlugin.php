@@ -102,11 +102,11 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           $entity = $item->getOriginalObject()->getValue();
           $filefield_values = $entity->get($field_name)->getValue();
 
-          $fids = array();
+          $all_fids = array();
           foreach ($filefield_values as $filefield_value) {
-            $fids[] = $filefield_value['target_id'];
+            $all_fids[] = $filefield_value['target_id'];
           }
-
+          $fids = $this->limitToAllowedNumber($all_fids);
           // Retrieve the files.
           $files = entity_load_multiple('file', $fids);
           $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
@@ -119,6 +119,30 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           $field->addValue($extraction);
         }
       }
+    }
+  }
+
+  /**
+   * Limit the number of items to index per field to the configured limit.
+   *
+   * @param array $all_fids
+   * @return array
+   *   An array of $limt number of items.
+   */
+  public function limitToAllowedNumber($all_fids) {
+    $limit = 0;
+    if (isset($this->configuration['number_indexed'])) {
+      $limit = $this->configuration['number_indexed'];
+    }
+    // If limit is 0 return all items.
+    if ($limit == 0) {
+      return $all_fids;
+    }
+    if (count($all_fids) > $limit) {
+      return array_slice($all_fids, 0, $limit);
+    }
+    else {
+      return $all_fids;
     }
   }
 
@@ -177,7 +201,15 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       '#maxlength' => 255,
       '#description' => $this->t('File extensions that are excluded from indexing. Separate extensions with a space and do not include the leading dot.<br />Example: "aif art avi bmp gif ico mov oga ogv png psd ra ram rgb flv"<br />Extensions are internally mapped to a MIME type, so it is not necessary to put variations that map to the same type (e.g. tif is sufficient for tif and tiff)'),
     );
-
+    $form['number_indexed'] = array(
+      '#type' => 'number',
+      '#title' => $this->t('Number of files indexed per file field'),
+      '#default_value' => isset($this->configuration['number_indexed']) ? $this->configuration['number_indexed'] : '0',
+      '#size' => 5,
+      '#min' => 0,
+      '#max' => 99999,
+      '#description' => $this->t('The number of files to index per file field.<br />The order of indexation is the weight in the widget.<br /> 0 for no restriction.'),
+    );
     return $form;
   }
 
