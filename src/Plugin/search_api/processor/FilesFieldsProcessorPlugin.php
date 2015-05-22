@@ -158,7 +158,9 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     $exists_in_disc = file_exists($file->getFileUri());
     // File should have a mime type that is allowed.
     $mime_allowed = !in_array($file->getMimeType(), $this->getExcludedMimes());
-    return $exists_in_disc && $mime_allowed;
+    // File permanent.
+    $file_permanent = $file->isPermanent();
+    return $exists_in_disc && $mime_allowed && $file_permanent;
   }
 
   /**
