@@ -160,7 +160,39 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     $mime_allowed = !in_array($file->getMimeType(), $this->getExcludedMimes());
     // File permanent.
     $file_permanent = $file->isPermanent();
-    return $exists_in_disc && $mime_allowed && $file_permanent;
+    // Whether a private file can be indexed or not.
+    $is_private_allowed = $this->isPrivateFileAllowed($file);
+
+    return $exists_in_disc && $mime_allowed && $file_permanent && $is_private_allowed;
+  }
+
+  /**
+   * Exclude private files from being indexed if the module is configured to do
+   * so.(This is the default behaviour of the module)
+   *
+   * @param type $file
+   * @return boolean
+   *   TRUE if we should prevent current file from beeing indexed.
+   */
+  public function isPrivateFileAllowed($file) {
+    // Know if private files are allowed to be indexed.
+    $private_allowed = FALSE;
+    if (isset($this->configuration['excluded_private'])) {
+      $private_allowed = $this->configuration['excluded_private'];
+    }
+    // Know if current file is private.
+    $uri = $file->getFileUri();
+    $file_is_private = FALSE;
+    if (substr($uri, 0, 10) == 'private://') {
+      $file_is_private = TRUE;
+    }
+
+    if (!$file_is_private) {
+      return TRUE;
+    }
+    else {
+      return $private_allowed;
+    }
   }
 
   /**
@@ -211,6 +243,12 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       '#min' => 0,
       '#max' => 99999,
       '#description' => $this->t('The number of files to index per file field.<br />The order of indexation is the weight in the widget.<br /> 0 for no restriction.'),
+    );
+    $form['excluded_private'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Exclude private files'),
+      '#default_value' => isset($this->configuration['excluded_private']) ? $this->configuration['excluded_private'] : FALSE,
+      '#description' => $this->t('Check this box if you want to exclude private files from being indexed.'),
     );
     return $form;
   }
