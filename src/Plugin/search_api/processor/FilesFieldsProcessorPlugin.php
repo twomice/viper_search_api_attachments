@@ -2,6 +2,7 @@
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
+use Drupal\Component\Utility\Bytes;
 use Drupal\Core\File\MimeType\MimeTypeGuesser;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
@@ -155,15 +156,42 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    */
   public function isFileIndexable($file) {
     // File should exist in disc.
-    $exists_in_disc = file_exists($file->getFileUri());
-    // File should have a mime type that is allowed.
-    $mime_allowed = !in_array($file->getMimeType(), $this->getExcludedMimes());
-    // File permanent.
-    $file_permanent = $file->isPermanent();
+    $indexable =  file_exists($file->getFileUri());
     // Whether a private file can be indexed or not.
-    $is_private_allowed = $this->isPrivateFileAllowed($file);
+    $indexable =  $indexable && $this->isPrivateFileAllowed($file);
+    // File should have a mime type that is allowed.
+    $indexable =  $indexable && !in_array($file->getMimeType(), $this->getExcludedMimes());
+    // File permanent.
+    $indexable =  $indexable && $file->isPermanent();
+    // File souldn't exceed configured file size.
+    $indexable =  $indexable && $this->isFileSizeAllowed($file);
 
-    return $exists_in_disc && $mime_allowed && $file_permanent && $is_private_allowed;
+    return $indexable;
+  }
+
+  /**
+   * Exclude files that exceed configured max size.
+   *
+   * @param type $file
+   * @return boolean
+   *   TRUE if the file size doesn't exceed configured max size.
+   */
+  public function isFileSizeAllowed($file) {
+    if (isset($this->configuration['max_filesize'])) {
+      $configured_size = $this->configuration['max_filesize'];
+      if ($configured_size == '0') {
+        return TRUE;
+      }
+      else {
+        $file_size_bytes = $file->getSize();
+        $configured_size_bytes = Bytes::toInt($configured_size);
+        if ($file_size_bytes > $configured_size_bytes) {
+          return FALSE;
+        }
+      }
+    }
+
+    return TRUE;
   }
 
   /**
@@ -244,6 +272,13 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       '#max' => 99999,
       '#description' => $this->t('The number of files to index per file field.<br />The order of indexation is the weight in the widget.<br /> 0 for no restriction.'),
     );
+    $form['max_filesize'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Maximum upload size'),
+      '#default_value' => isset($this->configuration['max_filesize']) ? $this->configuration['max_filesize'] : '0',
+      '#description' => $this->t('Enter a value like "10 KB", "10 MB" or "10 GB" in order to restrict the max file size of files that should be indexed.<br /> Enter "0" for no limit restriction.'),
+      '#size' => 10,
+    );
     $form['excluded_private'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Exclude private files'),
@@ -251,6 +286,29 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       '#description' => $this->t('Check this box if you want to exclude private files from being indexed.'),
     );
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::validateConfigurationForm($form, $form_state);
+    $max_filesize = trim($form_state->getValue('max_filesize'));
+    if ($max_filesize != '0') {
+      $error = FALSE;
+      $size_info = explode(' ', $max_filesize);
+      if (count($size_info) != 2) {
+        $error = TRUE;
+      }
+      else {
+        $starts_integer = is_integer((int)$size_info[0]);
+        $unit_expected = in_array($size_info[1], array('KB', 'MB', 'GB'));
+        $error = !$starts_integer || !$unit_expected;
+      }
+      if ($error) {
+        $form_state->setErrorByName('max_filesize', $this->t('The max filesize option must contain a valid value. You may either enter "0" (for no restriction) or a string like "10 KB, "10 MB" or "10 GB".'));
+      }
+    }
   }
 
   /**
