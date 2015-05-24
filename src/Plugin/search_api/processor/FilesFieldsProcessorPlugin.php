@@ -156,16 +156,27 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    */
   public function isFileIndexable($file) {
     // File should exist in disc.
-    $indexable =  file_exists($file->getFileUri());
-    // Whether a private file can be indexed or not.
-    $indexable =  $indexable && $this->isPrivateFileAllowed($file);
+    $indexable = file_exists($file->getFileUri());
+    if (!$indexable) {
+      return FALSE;
+    }
     // File should have a mime type that is allowed.
-    $indexable =  $indexable && !in_array($file->getMimeType(), $this->getExcludedMimes());
+    $indexable = $indexable && !in_array($file->getMimeType(), $this->getExcludedMimes());
+    if (!$indexable) {
+      return FALSE;
+    }
     // File permanent.
-    $indexable =  $indexable && $file->isPermanent();
+    $indexable = $indexable && $file->isPermanent();
+    if (!$indexable) {
+      return FALSE;
+    }
     // File souldn't exceed configured file size.
-    $indexable =  $indexable && $this->isFileSizeAllowed($file);
-
+    $indexable = $indexable && $this->isFileSizeAllowed($file);
+    if (!$indexable) {
+      return FALSE;
+    }
+    // Whether a private file can be indexed or not.
+    $indexable = $indexable && $this->isPrivateFileAllowed($file);
     return $indexable;
   }
 
