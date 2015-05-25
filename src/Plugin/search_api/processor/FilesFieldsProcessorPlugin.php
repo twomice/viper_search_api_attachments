@@ -293,7 +293,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     $form['excluded_private'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Exclude private files'),
-      '#default_value' => isset($this->configuration['excluded_private']) ? $this->configuration['excluded_private'] : FALSE,
+      '#default_value' => isset($this->configuration['excluded_private']) ? $this->configuration['excluded_private'] : TRUE,
       '#description' => $this->t('Check this box if you want to exclude private files from being indexed.'),
     );
     return $form;
