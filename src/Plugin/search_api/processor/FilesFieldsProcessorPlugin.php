@@ -47,10 +47,10 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * {@inheritdoc}
    */
   public function __construct(
-  array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $textExtractorPluginManager, MimeTypeGuesser $mimeGesser) {
+  array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $textExtractorPluginManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $textExtractorPluginManager;
-    $this->mimeGesser = $mimeGesser;
+
   }
 
   /**
@@ -58,13 +58,14 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $plugin = new static(
-        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('file.mime_type.guesser')
+        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor')
     );
 
     /** @var \Drupal\Core\StringTranslation\TranslationInterface $translation */
     $translation = $container->get('string_translation');
     $plugin->setStringTranslation($translation);
-
+    $mimeGesser = $container->get('file.mime_type.guesser');
+    $plugin->mimeGesser = $mimeGesser;
     return $plugin;
   }
 
