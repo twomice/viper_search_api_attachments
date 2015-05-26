@@ -2,13 +2,14 @@
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
+use Drupal\Core\Url;
 use Drupal\Component\Utility\Bytes;
-use Drupal\Core\File\MimeType\MimeTypeGuesser;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\search_api\Datasource\DatasourceInterface;
+use Drupal\Core\File\MimeType\MimeTypeGuesser;
 use Drupal\search_api\Processor\ProcessorPluginBase;
+use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -90,16 +91,16 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * {@inheritdoc}
    */
   public function preprocessIndexItems(array &$items) {
-
-    foreach ($items as $item) {
-      foreach ($this->getFileFields() as $field_name => $label) {
-        if (!($field = $item->getField('search_api_attachments_' . $field_name))) {
-          continue;
-        }
-        $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
-        $extractor_plugin_id = $config->get('extraction_method');
-        $configuration = $config->get($extractor_plugin_id . '_configuration');
-        if ($extractor_plugin_id) {
+    $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
+    $extractor_plugin_id = $config->get('extraction_method');
+    if ($extractor_plugin_id) {
+      $configuration = $config->get($extractor_plugin_id . '_configuration');
+      $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
+      foreach ($items as $item) {
+        foreach ($this->getFileFields() as $field_name => $label) {
+          if (!($field = $item->getField('search_api_attachments_' . $field_name))) {
+            continue;
+          }
           // Need to retrieve the files.
           $entity = $item->getOriginalObject()->getValue();
           $filefield_values = $entity->get($field_name)->getValue();
@@ -111,7 +112,6 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           $fids = $this->limitToAllowedNumber($all_fids);
           // Retrieve the files.
           $files = entity_load_multiple('file', $fids);
-          $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
           $extraction = '';
           foreach ($files as $file) {
             if ($this->isFileIndexable($file)) {
@@ -121,6 +121,11 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           $field->addValue($extraction);
         }
       }
+    }
+    else {
+      $url = Url::fromRoute('search_api_attachments.admin_form');
+      $config_link = \Drupal::l($this->t('configuration page'), $url);
+      drupal_set_message($this->t('Please configure an extraction method first by visiting the @config_link', array('@config_link' => $config_link)), 'warning');
     }
   }
 
