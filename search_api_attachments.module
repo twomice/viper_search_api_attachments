@@ -1,0 +1,28 @@
+<?php
+
+use Drupal\file\Entity\File;
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for file entities.
+ */
+function search_api_attachments_file_update(File $file) {
+  _search_api_attachments_delete_cache($file);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for file entities.
+ */
+function search_api_attachments_file_delete(File $file) {
+  _search_api_attachments_delete_cache($file);
+}
+
+/**
+ * Helper function to delete a file extracted data cache from this module's bin.
+ *
+ * @param File $file
+ */
+function _search_api_attachments_delete_cache(File $file) {
+  $bin = 'search_api_attachments';
+  $cid = $bin . ':' . $file->id();
+  \Drupal::cache($bin)->delete($cid);
+}
