@@ -2,3 +2,10 @@ services:
   plugin.manager.search_api_attachments.text_extractor:
     class: Drupal\search_api_attachments\TextExtractorPluginManager
     parent: default_plugin_manager
+  cache.search_api_attachments:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory_method: get
+    factory_service: cache_factory
+    arguments: [search_api_attachments]

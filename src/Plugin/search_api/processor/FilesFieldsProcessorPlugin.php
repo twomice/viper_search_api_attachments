@@ -3,6 +3,7 @@
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
 use Drupal\Core\Url;
+use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Bytes;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Form\FormStateInterface;
@@ -115,7 +116,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           $extraction = '';
           foreach ($files as $file) {
             if ($this->isFileIndexable($file)) {
-              $extraction .= $extractor_plugin->extract($file);
+              $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
             }
           }
           $field->addValue($extraction);
@@ -127,6 +128,29 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       $config_link = \Drupal::l($this->t('configuration page'), $url);
       drupal_set_message($this->t('Please configure an extraction method first by visiting the @config_link', array('@config_link' => $config_link)), 'warning');
     }
+  }
+
+  /**
+   * Extract file data or get it from cache if available and cache it.
+   *
+   * @param $file
+   *   A file object.
+   * @param $extractor_plugin
+   *   The plugin used to extract file content.
+   *
+   * @return string $extracted_data
+   */
+  public function extractOrGetFromCache($file, $extractor_plugin) {
+    $bin = 'search_api_attachments';
+    $cid = $bin . ':' . $file->id();
+    if ($cache = \Drupal::cache($bin)->get($cid)) {
+      $extracted_data = $cache->data;
+    }
+    else {
+      $extracted_data = $extractor_plugin->extract($file);
+      \Drupal::cache($bin)->set($cid, $extracted_data, Cache::PERMANENT, $file->getCacheTags());
+    }
+    return $extracted_data;
   }
 
   /**
