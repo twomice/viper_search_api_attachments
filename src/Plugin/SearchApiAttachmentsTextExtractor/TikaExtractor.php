@@ -28,6 +28,7 @@ class TikaExtractor extends TextExtractorPluginBase {
   public function extract($file) {
     $filepath = $this->getRealpath($file->getFileUri());
     $tika = realpath($this->configuration['tika_path']);
+    $java = $this->configuration['java_path'];
     // UTF-8 multibyte characters will be stripped by escapeshellargs() for the
     // default C-locale.
     // So temporarily set the locale to UTF-8 so that the filepath remains
@@ -42,7 +43,7 @@ class TikaExtractor extends TextExtractorPluginBase {
     // Force running the Tika jar headless.
     $param = ' -Djava.awt.headless=true ' . $param;
 
-    $cmd = escapeshellcmd('java') . $param . ' -jar ' . escapeshellarg($tika) . ' -t ' . escapeshellarg($filepath);
+    $cmd = $java . $param . ' -jar ' . escapeshellarg($tika) . ' -t ' . escapeshellarg($filepath);
     if (strpos(ini_get('extension_dir'), 'MAMP/')) {
       $cmd = 'export DYLD_LIBRARY_PATH=""; ' . $cmd;
     }
@@ -57,6 +58,12 @@ class TikaExtractor extends TextExtractorPluginBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form['java_path'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Path to java executable'),
+      '#description' => $this->t('Enter the path to java executable. Default value is "java".'),
+      '#default_value' => isset($this->configuration['java_path']) ? $this->configuration['java_path'] : 'java',
+    );
     $form['tika_path'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to Tika .jar file'),
@@ -71,12 +78,28 @@ class TikaExtractor extends TextExtractorPluginBase {
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
+    // Check java path.
+    if (isset($values['text_extractor_config']['java_path']) && !empty($values['text_extractor_config']['java_path'])) {
+      $java = $values['text_extractor_config']['java_path'];
+      exec($java, $output, $return_code);
+      // $return_code = 127 if it fails. 1 instead.
+      if ($return_code != 1) {
+        $form_state->setError($form['text_extractor_config']['java_path'], $this->t('Invalid path or filename %path for java executable.', array('%path' => $values['text_extractor_config']['java_path'])));
+        return;
+      }
+    }
+    else {
+      $form_state->setError($form['text_extractor_config']['java_path'], $this->t('You must set a valid path to be able to check tika application jar.', array('%path' => $values['text_extractor_config']['java_path'])));
+      return;
+    }
+
+    // Check tika path.
     if (isset($values['text_extractor_config']['tika_path']) && !empty($values['text_extractor_config']['tika_path'])) {
       if (!file_exists($values['text_extractor_config']['tika_path'])) {
         $form_state->setError($form['text_extractor_config']['tika_path'], $this->t('Invalid path or filename %path for tika application jar.', array('%path' => $values['text_extractor_config']['tika_path'])));
       }
       else {
-        $cmd = escapeshellcmd('java') . ' -jar ' . escapeshellarg($values['text_extractor_config']['tika_path']) . ' -V';
+        $cmd = $java . ' -jar ' . escapeshellarg($values['text_extractor_config']['tika_path']) . ' -V';
         exec($cmd, $output, $return_code);
         // $return_code = 1 if it fails. 0 instead.
         if ($return_code) {
@@ -93,6 +116,7 @@ class TikaExtractor extends TextExtractorPluginBase {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $this->configuration['java_path'] = $form_state->getValue(array('text_extractor_config', 'java_path'));
     $this->configuration['tika_path'] = $form_state->getValue(array('text_extractor_config', 'tika_path'));
     parent::submitConfigurationForm($form, $form_state);
   }
