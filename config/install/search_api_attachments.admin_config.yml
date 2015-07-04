@@ -1,0 +1,8 @@
+extraction_method: ''
+
+tika_extractor_configuration:
+  java_path: 'java'
+  tika_path: ''
+
+solr_extractor_configuration:
+  solr_server: ''
