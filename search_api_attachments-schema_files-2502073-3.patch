@@ -1,0 +1,61 @@
+From 5c0ab444c04ea7c7e41f4760760fac5ce82d6e8c Mon Sep 17 00:00:00 2001
+From: Florent Torregrosa <florent.torregrosa@gmail.com>
+Date: Sat, 4 Jul 2015 16:15:50 +0200
+Subject: [PATCH] Issue #2502073: Add schema.yml files.
+
+---
+ .../search_api_attachments.admin_config.yml        |  8 +++++++
+ config/schema/search_api_attachments.schema.yml    | 26 ++++++++++++++++++++++
+ 2 files changed, 34 insertions(+)
+ create mode 100644 config/install/search_api_attachments.admin_config.yml
+ create mode 100644 config/schema/search_api_attachments.schema.yml
+
+diff --git a/config/install/search_api_attachments.admin_config.yml b/config/install/search_api_attachments.admin_config.yml
+new file mode 100644
+index 0000000..2e64200
+--- /dev/null
++++ b/config/install/search_api_attachments.admin_config.yml
+@@ -0,0 +1,8 @@
++extraction_method: ''
++
++tika_extractor_configuration:
++  java_path: 'java'
++  tika_path: ''
++
++solr_extractor_configuration:
++  solr_server: ''
+diff --git a/config/schema/search_api_attachments.schema.yml b/config/schema/search_api_attachments.schema.yml
+new file mode 100644
+index 0000000..b8533c5
+--- /dev/null
++++ b/config/schema/search_api_attachments.schema.yml
+@@ -0,0 +1,26 @@
++# Schema for the configuration files of the Search API attachments module.
++
++search_api_attachments.admin_config:
++  type: mapping
++  label: 'Search API attachments settings'
++  mapping:
++    extraction_method:
++      type: string
++      label: 'Extractor Plugin ID'
++    tika_extractor_configuration:
++      type: mapping
++      label: 'Tika extractor configuration'
++      mapping:
++        java_path:
++          type: string
++          label: 'Path to java executable'
++        tika_path:
++          type: string
++          label: 'Path to Tika .jar file'
++    solr_extractor_configuration:
++      type: mapping
++      label: 'Solr extractor configuration'
++      mapping:
++        'solr_server':
++          type: string
++          label: 'Solr server'
+-- 
+2.1.4
+
