@@ -192,7 +192,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     if ($extractor_plugin_id && !$ajax_submitted_empty_value) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
-      $text_extractor_form = $extractor_plugin->buildConfigurationForm();
+      $text_extractor_form = $extractor_plugin->buildConfigurationForm(array(), $form_state);
 
       $form['text_extractor_config'] += $text_extractor_form;
     }
