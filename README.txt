@@ -60,3 +60,8 @@ This means that you delete this part:
 Then in example folder:
 cp -r ../contrib/extraction/lib solr/collection1/lib
 cp ../dist/solr-cell-4.10.4.jar solr/collection1/lib/
+
+Hidden Features
+---------------
+This module suggests a Views filter to choose to search in attachments files too
+or not.
