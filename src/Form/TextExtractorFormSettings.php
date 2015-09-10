@@ -237,33 +237,22 @@ class TextExtractorFormSettings extends ConfigFormBase {
   }
 
   /**
-   * Helper method to get/create a html test file and extract its data.
+   * Helper method to get/create a pdf test file and extract its data.
    * The file created is then deleted after successful extraction.
    *
    * @return object $file
    */
   public function getTestFile() {
     $account = \Drupal::currentUser();
-    $contents = '
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Congratulations!</title>
-</head>
-<body>
-<div>
-<p>' . $this->t('The extraction seems working!') . '</p>
-<p>' . $this->t('Yay!') . '</p>
-</div>
-</body>';
-    $filepath = 'public://search_api_attachments_test_extraction.html';
+    $filepath = 'public://search_api_attachments_test_extraction.pdf';
     $values = array('uri' => $filepath);
     $file = entity_load_multiple_by_properties('file', $values);
     if (empty($file)) {
-      // Create the file if it doesn't already exist.
-      file_put_contents($filepath, $contents);
-
+      // Copy the source file to public directory.
+      $source = drupal_get_path('module', 'search_api_attachments');
+      $source .= '/data/search_api_attachments_test_extraction.pdf';
+      copy($source, $filepath);
+      // Create the file object.
       $file = entity_create('file', array(
         'uri' => $filepath,
         'uid' => $account->id(),
