@@ -78,6 +78,12 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * {@inheritdoc}
    */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function calculateDependencies() {
     return array();
   }

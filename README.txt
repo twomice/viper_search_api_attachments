@@ -72,7 +72,7 @@ Pdftotext is a command line utility tool included by default on many linux
 distributions. See the wikipedia page for more info:
 https://en.wikipedia.org/wiki/Pdftotext
 
-EXTRACTION CONFIGURATION (Pdf2txt)
+EXTRACTION CONFIGURATION (python Pdf2txt)
 -------------------------------
 On Debian 8
 

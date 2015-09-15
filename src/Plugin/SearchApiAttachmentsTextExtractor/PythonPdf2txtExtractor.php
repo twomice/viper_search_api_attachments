@@ -27,10 +27,10 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
     if (in_array($file->getMimeType(), $this->getPdfMimeTypes())) {
       $filepath = $this->getRealpath($file->getFileUri());
       // Restore the locale.
-      $python_path = realpath($this->configuration['python_path']);
-      $python_pdf2txt_path = realpath($this->configuration['python_pdf2txt_path']);
-      $python_pdf2txt = realpath($python_pdf2txt_path . '/' . $this->configuration['pdf2txt_script']);
-      $cmd = escapeshellcmd($python_path) . ' ' . escapeshellarg($python_pdf2txt) . ' -C -t text ' . escapeshellarg($filepath);
+      $python_path = $this->configuration['python_path'];
+      $python_pdf2txt_script = realpath($this->configuration['python_pdf2txt_script']);
+      $cmd = escapeshellcmd($python_path) . ' ' . escapeshellarg($python_pdf2txt_script) . ' -C -t text ' . escapeshellarg($filepath);
+
       // UTF-8 multibyte characters will be stripped by escapeshellargs() for
       // the default C-locale.
       // So temporarily set the locale to UTF-8 so that the filepath remains
@@ -57,17 +57,10 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
       '#default_value' => $this->configuration['python_path'],
       '#required' => TRUE,
     );
-    $form['python_pdf2txt_path'] = array(
-      '#type' => 'textfield',
-      '#title' => $this->t('Path to python pdf2txt executable'),
-      '#description' => $this->t('Enter the path to python pdf2txt executable. Example: "/usr/bin".'),
-      '#default_value' => $this->configuration['python_pdf2txt_path'],
-      '#required' => TRUE,
-    );
     $form['python_pdf2txt_script'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Filename of the python pdf2txt script'),
-      '#description' => $this->t('Enter the filename of the python pdf2txt script. Example: "pdf2txt".'),
+      '#title' => $this->t('Full path to the python pdf2txt script'),
+      '#description' => $this->t('Enter the full path to the python pdf2txt script. Example: "/usr/bin/pdf2txt".'),
       '#default_value' => $this->configuration['python_pdf2txt_script'],
       '#required' => TRUE,
     );
@@ -81,21 +74,18 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
     $values = $form_state->getValues();
 
     // Check that the file exists.
-    $python_path = realpath($values['text_extractor_config']['python_path']);
-    $python_pdf2txt_path = realpath($values['text_extractor_config']['python_pdf2txt_path']);
-    $python_pdf2txt = $python_pdf2txt_path . '/' . $values['text_extractor_config']['python_pdf2txt_script'];
-    if (!file_exists($python_pdf2txt)) {
-      $form_state->setError($form['text_extractor_config']['python_pdf2txt_path'], '');
-      $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('Invalid path or filename %path for python pdf2txt executable.', array('%path' => $python_pdf2txt)));
+    $python_path = $values['text_extractor_config']['python_path'];
+    $python_pdf2txt_script = $values['text_extractor_config']['python_pdf2txt_script'];
+    if (!file_exists($python_pdf2txt_script)) {
+      $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('The file %path does not exist.', array('%path' => $python_pdf2txt_script)));
     }
     // Check that the file is an executable Python Script.
     else {
-      $cmd = escapeshellcmd($python_path) . ' ' . escapeshellarg($python_pdf2txt);
+      $cmd = escapeshellcmd($python_path) . ' ' . escapeshellarg($python_pdf2txt_script);
       exec($cmd, $output, $return_code);
       // $return_code = 1 if it fails. 100 instead.
       if ($return_code != 100) {
         $form_state->setError($form['text_extractor_config']['python_path'], '');
-        $form_state->setError($form['text_extractor_config']['python_pdf2txt_path'], '');
         $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('Python Pdf2txt script file is not executable.'));
       }
     }
@@ -106,7 +96,6 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['python_path'] = $form_state->getValue(array('text_extractor_config', 'python_path'));
-    $this->configuration['python_pdf2txt_path'] = $form_state->getValue(array('text_extractor_config', 'python_pdf2txt_path'));
     $this->configuration['python_pdf2txt_script'] = $form_state->getValue(array('text_extractor_config', 'python_pdf2txt_script'));
     parent::submitConfigurationForm($form, $form_state);
   }

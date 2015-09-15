@@ -31,12 +31,9 @@ search_api_attachments.admin_config:
         python_path:
           type: string
           label: 'Path to python executable'
-        python_pdf2txt_path:
-          type: string
-          label: 'Path to python pdf2txt executable'
         python_pdf2txt_script:
           type: string
-          label: 'Filename of the python pdf2txt script'
+          label: 'Full path to the python pdf2txt script'
     pdftotext_extractor_configuration:
       type: ignore
       label: 'Pdftotext extractor configuration'
