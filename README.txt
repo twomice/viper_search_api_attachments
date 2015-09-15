@@ -1,7 +1,12 @@
 Search Api Attachments
 
-This module will extract the content out of attached files using the Tika
-library or the build in Solr extractor and index it.
+This module will extract the content out of attached files using chosen method
+among:
+ - the Tika library
+ - the build in Solr extractor
+ - the Pdftotext command line tool
+ - the python Pdf2txt extractor
+and index it.
 Search API attachments will index many file formats.
 
 REQUIREMENTS
@@ -60,3 +65,16 @@ This means that you delete this part:
 Then in example folder:
 cp -r ../contrib/extraction/lib solr/collection1/lib
 cp ../dist/solr-cell-4.10.4.jar solr/collection1/lib/
+
+EXTRACTION CONFIGURATION (Pdftotext)
+-------------------------------
+Pdftotext is a command line utility tool included by default on many linux
+distributions. See the wikipedia page for more info:
+https://en.wikipedia.org/wiki/Pdftotext
+
+EXTRACTION CONFIGURATION (Pdf2txt)
+-------------------------------
+On Debian 8
+
+Install Pdf2txt (tested with package version 20110515+dfsg-1 and python 2.7.9)
+> sudo apt-get install python-pdfminer

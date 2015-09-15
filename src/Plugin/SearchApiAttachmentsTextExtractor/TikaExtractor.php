@@ -22,8 +22,6 @@ class TikaExtractor extends TextExtractorPluginBase {
    *
    * @return string
    *   The text extracted from the file.
-   *
-   * @throws \Exception
    */
   public function extract($file) {
     $filepath = $this->getRealpath($file->getFileUri());
@@ -61,14 +59,16 @@ class TikaExtractor extends TextExtractorPluginBase {
     $form['java_path'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to java executable'),
-      '#description' => $this->t('Enter the path to java executable. Default value is "java".'),
-      '#default_value' => isset($this->configuration['java_path']) ? $this->configuration['java_path'] : 'java',
+      '#description' => $this->t('Enter the path to java executable. Example: "java".'),
+      '#default_value' => $this->configuration['java_path'],
+      '#required' => TRUE,
     );
     $form['tika_path'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Path to Tika .jar file'),
-      '#description' => $this->t('Enter the full path to tika executable jar file. For example: "/var/apache-tika/tika-app-1.8.jar".'),
+      '#description' => $this->t('Enter the full path to tika executable jar file. Example: "/var/apache-tika/tika-app-1.8.jar".'),
       '#default_value' => $this->configuration['tika_path'],
+      '#required' => TRUE,
     );
     return $form;
   }

@@ -103,4 +103,17 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
     }
   }
 
+  /**
+   * Helper method to get the PDF MIME types.
+   *
+   * @return array
+   *   An array of the PDF MIME types.
+   */
+  public function getPdfMimeTypes() {
+    $mimeGuesser = \Drupal::service('file.mime_type.guesser');
+    $pdfMimeTypes = array();
+    $pdfMimeTypes[] = $mimeGuesser->guess('dummy.pdf');
+    return $pdfMimeTypes;
+  }
+
 }

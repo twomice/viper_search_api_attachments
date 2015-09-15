@@ -24,3 +24,19 @@ search_api_attachments.admin_config:
         'solr_server':
           type: string
           label: 'Solr server'
+    python_pdf2txt_extractor_configuration:
+      type: mapping
+      label: 'Python Pdf2txt extractor configuration'
+      mapping:
+        python_path:
+          type: string
+          label: 'Path to python executable'
+        python_pdf2txt_path:
+          type: string
+          label: 'Path to python pdf2txt executable'
+        python_pdf2txt_script:
+          type: string
+          label: 'Filename of the python pdf2txt script'
+    pdftotext_extractor_configuration:
+      type: ignore
+      label: 'Pdftotext extractor configuration'

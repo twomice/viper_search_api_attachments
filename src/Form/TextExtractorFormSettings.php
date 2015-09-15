@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -32,7 +33,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-        $container->get('config.factory'), $container->get('plugin.manager.search_api_attachments.text_extractor')
+      $container->get('config.factory'), $container->get('plugin.manager.search_api_attachments.text_extractor')
     );
   }
 
@@ -154,7 +155,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
   }
 
   /**
-   * Subform that will be updated with Ajax to display the configuration of an
+   * Subform.
+   *
+   * It will be updated with Ajax to display the configuration of an
    * extraction plugin method.
    *
    * @param array $form
@@ -184,12 +187,12 @@ class TextExtractorFormSettings extends ConfigFormBase {
     // If the form is submitted with ajax and the empty value is chosen or if
     // there is no configuration yet and no extraction method was chosen in the
     // form.
-    if ($ajax_submitted_empty_value || !$extractor_plugin_id) {
+    if (isset($ajax_submitted_empty_value) || !$extractor_plugin_id) {
       $form['text_extractor_config']['#title'] = $this->t('Please make a choice');
       $form['text_extractor_config']['#description'] = $this->t('Please choose an extraction method in the list above.');
     }
 
-    if ($extractor_plugin_id && !$ajax_submitted_empty_value) {
+    if ($extractor_plugin_id && !isset($ajax_submitted_empty_value)) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
       $text_extractor_form = $extractor_plugin->buildConfigurationForm(array(), $form_state);
@@ -199,8 +202,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
   }
 
   /**
-   * Subform to test the configuration of an
-   * extraction plugin method.
+   * Subform to test the configuration of an extraction plugin method.
    *
    * @param array $form
    * @param FormStateInterface $form_state
@@ -229,6 +231,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *
    * @param array $form
    * @param FormStateInterface $form_state
+   *
    * @return array
    */
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
@@ -246,14 +249,14 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $account = \Drupal::currentUser();
     $filepath = 'public://search_api_attachments_test_extraction.pdf';
     $values = array('uri' => $filepath);
-    $file = entity_load_multiple_by_properties('file', $values);
+    $file = \Drupal::entityManager()->getStorage('file')->loadByProperties($values);
     if (empty($file)) {
       // Copy the source file to public directory.
       $source = drupal_get_path('module', 'search_api_attachments');
       $source .= '/data/search_api_attachments_test_extraction.pdf';
       copy($source, $filepath);
       // Create the file object.
-      $file = entity_create('file', array(
+      $file = File::create(array(
         'uri' => $filepath,
         'uid' => $account->id(),
       ));

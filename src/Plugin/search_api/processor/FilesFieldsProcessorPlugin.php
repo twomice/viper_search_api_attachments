@@ -43,7 +43,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    *
    * @var \Drupal\Core\File\MimeType\MimeTypeGuesser
    */
-  protected $mimeGesser;
+  protected $mimeGuesser;
 
   /**
    * {@inheritdoc}
@@ -66,8 +66,8 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     /** @var \Drupal\Core\StringTranslation\TranslationInterface $translation */
     $translation = $container->get('string_translation');
     $plugin->setStringTranslation($translation);
-    $mimeGesser = $container->get('file.mime_type.guesser');
-    $plugin->mimeGesser = $mimeGesser;
+    $mimeGuesser = $container->get('file.mime_type.guesser');
+    $plugin->mimeGuesser = $mimeGuesser;
     return $plugin;
   }
 
@@ -112,7 +112,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           }
           $fids = $this->limitToAllowedNumber($all_fids);
           // Retrieve the files.
-          $files = entity_load_multiple('file', $fids);
+          $files = \Drupal::entityManager()->getStorage('file')->loadMultiple($fids);
           $extraction = '';
           foreach ($files as $file) {
             if ($this->isFileIndexable($file)) {
@@ -157,8 +157,9 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * Limit the number of items to index per field to the configured limit.
    *
    * @param array $all_fids
+   *
    * @return array
-   *   An array of $limt number of items.
+   *   An array of $limit number of items.
    */
   public function limitToAllowedNumber($all_fids) {
     $limit = 0;
@@ -182,6 +183,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    *
    * @param $file
    *   A file object.
+   *
    * @return boolean
    */
   public function isFileIndexable($file) {
@@ -200,7 +202,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     if (!$indexable) {
       return FALSE;
     }
-    // File souldn't exceed configured file size.
+    // File shouldn't exceed configured file size.
     $indexable = $indexable && $this->isFileSizeAllowed($file);
     if (!$indexable) {
       return FALSE;
@@ -213,9 +215,10 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Exclude files that exceed configured max size.
    *
-   * @param type $file
+   * @param object $file
+   *
    * @return boolean
-   *   TRUE if the file size doesn't exceed configured max size.
+   *   TRUE if the file size does not exceed configured max size.
    */
   public function isFileSizeAllowed($file) {
     if (isset($this->configuration['max_filesize'])) {
@@ -239,9 +242,10 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * Exclude private files from being indexed if the module is configured to do
    * so.(This is the default behaviour of the module)
    *
-   * @param type $file
+   * @param object $file
+   *
    * @return boolean
-   *   TRUE if we should prevent current file from beeing indexed.
+   *   TRUE if we should prevent current file from being indexed.
    */
   public function isPrivateFileAllowed($file) {
     // Know if private files are allowed to be indexed.
@@ -377,11 +381,12 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
 
   /**
    * Get a corresponding array of excluded mime types from a space separated
-   * string of file extensiosn.
+   * string of file extensions.
    *
    * @param string $extensions
    *   If it's not null, the return will correspond to the extensions.
    *   If it is null,the return will correspond to the default excluded extensions.
+   *
    * @return array
    */
   public function getExcludedMimes($extensions = NULL) {
@@ -396,7 +401,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       }
       $excluded_mimes = array();
       foreach ($extensions as $extension) {
-        $excluded_mimes[] = $this->mimeGesser->guess('dummy.' . $extension);
+        $excluded_mimes[] = $this->mimeGuesser->guess('dummy.' . $extension);
       }
     }
     // Ensure we get an array of unique mime values because many extension can
