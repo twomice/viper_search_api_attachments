@@ -2,13 +2,14 @@
 
 namespace Drupal\search_api_attachments\Form;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\Entity\File;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Configuration form.
@@ -19,6 +20,11 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * Name of the config being edited.
    */
   const CONFIGNAME = 'search_api_attachments.admin_config';
+
+  /**
+   * textExtractorPluginManagerype service.
+   */
+  private $textExtractorPluginManager;
 
   /**
    * {@inheritdoc}
