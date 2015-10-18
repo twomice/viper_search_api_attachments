@@ -22,7 +22,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
   const CONFIGNAME = 'search_api_attachments.admin_config';
 
   /**
-   * textExtractorPluginManagerype service.
+   * Drupal\search_api_attachments\TextExtractorPluginManager service.
    */
   private $textExtractorPluginManager;
 
@@ -99,7 +99,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $extractor_plugin_id = $form_state->getValue('extraction_method');
     if ($extractor_plugin_id) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
-      $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
+      $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
       $extractor_plugin->validateConfigurationForm($form, $form_state);
     }
   }
@@ -114,7 +114,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $extractor_plugin_id = $form_state->getValue('extraction_method');
     if ($extractor_plugin_id) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
-      $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
+      $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
       $extractor_plugin->submitConfigurationForm($form, $form_state);
     }
 
@@ -153,7 +153,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
       'labels' => array(),
       'descriptions' => array()
     );
-    foreach ($this->textExtractorPluginManager->getDefinitions() as $plugin_id => $plugin_definition) {
+    foreach ($this->getTextExtractorPluginManager()->getDefinitions() as $plugin_id => $plugin_definition) {
       $options['labels'][$plugin_id] = Html::escape($plugin_definition['label']);
       $options['descriptions'][$plugin_id] = Html::escape($plugin_definition['description']);
     }
@@ -200,7 +200,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
 
     if ($extractor_plugin_id && !isset($ajax_submitted_empty_value)) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
-      $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
+      $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
       $text_extractor_form = $extractor_plugin->buildConfigurationForm(array(), $form_state);
 
       $form['text_extractor_config'] += $text_extractor_form;
@@ -272,6 +272,16 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $file = reset($file);
     }
     return $file;
+  }
+  
+  /**
+   * Returns the text extractor plugin manager.
+   *
+   * @return \Drupal\search_api_attachments\TextExtractorPluginManager
+   *   The text extractor plugin manager.
+   */
+  protected function getTextExtractorPluginManager() {
+    return $this->textExtractorPluginManager ?: \Drupal::service('plugin.manager.search_api_attachments.text_extractor');
   }
 
 }
