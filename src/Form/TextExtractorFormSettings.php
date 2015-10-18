@@ -8,6 +8,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 
@@ -83,6 +84,13 @@ class TextExtractorFormSettings extends ConfigFormBase {
     if (!empty($trigger['#is_button'])) {
       $this->buildTextExtractorTestResultForm($form, $form_state);
     }
+    $url = Url::fromRoute('system.performance_settings')->toString();
+    $form['preserve_cache'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Preserve cached extractions across cache clears.'),
+      '#default_value' => $config->get('preserve_cache'),
+      '#description' => $this->t('When checked, <a href="@url">clearing the sidewide cache</a> will not clear the cache of extracted files.', array('@url' => $url)),
+    );
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Submit and test extraction'),

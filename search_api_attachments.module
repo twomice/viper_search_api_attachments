@@ -17,12 +17,24 @@ function search_api_attachments_file_delete(File $file) {
 }
 
 /**
- * Helper function to delete a file extracted data cache from this module's bin.
+ * Implements hook_cache_flush().
+ */
+function search_api_attachments_cache_flush() {
+  $config = \Drupal::config('search_api_attachments.admin_config');
+  $preserve_cache = $config->get('preserve_cache');
+  if (!$preserve_cache) {
+    $collection = 'search_api_attachments';
+    \Drupal::keyValue($collection)->deleteAll();
+  }
+}
+
+/**
+ * Helper function to delete a file extracted data cache.
  *
  * @param File $file
  */
 function _search_api_attachments_delete_cache(File $file) {
-  $bin = 'search_api_attachments';
-  $cid = $bin . ':' . $file->id();
-  \Drupal::cache($bin)->delete($cid);
+  $collection = 'search_api_attachments';
+  $key = $collection . ':' . $file->id();
+  \Drupal::keyValue($collection)->delete($key);
 }

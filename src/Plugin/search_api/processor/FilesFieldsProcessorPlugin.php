@@ -3,7 +3,6 @@
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
 use Drupal\Core\Url;
-use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Bytes;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Form\FormStateInterface;
@@ -141,14 +140,14 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * @return string $extracted_data
    */
   public function extractOrGetFromCache($file, $extractor_plugin) {
-    $bin = 'search_api_attachments';
-    $cid = $bin . ':' . $file->id();
-    if ($cache = \Drupal::cache($bin)->get($cid)) {
-      $extracted_data = $cache->data;
+    $collection = 'search_api_attachments';
+    $key = $collection . ':' . $file->id();
+    if ($cache =  \Drupal::keyValue($collection)->get($key)) {
+      $extracted_data = $cache;
     }
     else {
       $extracted_data = $extractor_plugin->extract($file);
-      \Drupal::cache($bin)->set($cid, $extracted_data, Cache::PERMANENT, $file->getCacheTags());
+      \Drupal::keyValue($collection)->set($key, $extracted_data);
     }
     return $extracted_data;
   }
