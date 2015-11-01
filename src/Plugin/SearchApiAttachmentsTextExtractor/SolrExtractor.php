@@ -13,6 +13,8 @@ use Drupal\search_api_attachments\TextExtractorPluginBase;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 /**
+ * Provides solr extractor.
+ *
  * @SearchApiAttachmentsTextExtractor(
  *   id = "solr_extractor",
  *   label = @Translation("Solr Extractor"),

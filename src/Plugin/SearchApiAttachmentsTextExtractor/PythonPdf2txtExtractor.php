@@ -11,6 +11,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
 
 /**
+ * Provides python pdf2text extractor.
+ *
  * @SearchApiAttachmentsTextExtractor(
  *   id = "python_pdf2txt_extractor",
  *   label = @Translation("Python Pdf2txt Extractor"),

@@ -11,6 +11,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
 
 /**
+ * Provides pdftotext extractor.
+ *
  * @SearchApiAttachmentsTextExtractor(
  *   id = "pdftotext_extractor",
  *   label = @Translation("Pdftotext Extractor"),

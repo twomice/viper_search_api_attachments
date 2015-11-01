@@ -19,6 +19,8 @@ use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * Provides file fields processor.
+ *
  * @SearchApiProcessor(
  *   id = "file_attachments",
  *   label = @Translation("File attachments"),
@@ -161,8 +163,8 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Limit the number of items to index per field to the configured limit.
    *
-   * @param array
-   *   $all_fids
+   * @param array $all_fids
+   *   Array of fids
    *
    * @return array
    *   An array of $limit number of items.
@@ -223,7 +225,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * Exclude files that exceed configured max size.
    *
    * @param object $file
-   *   File object
+   *   File object.
    *
    * @return bool
    *   TRUE if the file size does not exceed configured max size.
@@ -252,7 +254,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * Only happens if the module is configured to do so(default behaviour).
    *
    * @param object $file
-   *   File object
+   *   File object.
    *
    * @return bool
    *   TRUE if we should prevent current file from being indexed.

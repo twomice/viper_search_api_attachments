@@ -11,6 +11,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
 
 /**
+ * Provides tika extractor.
+ *
  * @SearchApiAttachmentsTextExtractor(
  *   id = "tika_extractor",
  *   label = @Translation("Tika Extractor"),
