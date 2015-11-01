@@ -257,8 +257,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * @param FormStateInterface $form_state
    *   The form state object.
    *
-   * @return
-   *   array
+   * @return array
+   *   subform
    */
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
     // We just need to return the relevant part of the form here.
@@ -270,8 +270,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *
    * The file created is then deleted after successful extraction.
    *
-   * @return
-   *   object $file
+   * @return object
+   *   $file
    */
   public function getTestFile() {
     $account = \Drupal::currentUser();

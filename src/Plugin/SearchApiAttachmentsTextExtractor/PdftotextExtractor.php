@@ -42,7 +42,7 @@ class PdftotextExtractor extends TextExtractorPluginBase {
       $cmd = escapeshellcmd('pdftotext') . ' ' . escapeshellarg($filepath) . ' -';
       // Restore the locale.
       setlocale(LC_CTYPE, $backup_locale);
-      // Support UTF-8 commands
+      // Support UTF-8 commands.
       // @see http://www.php.net/manual/en/function.shell-exec.php#85095
       shell_exec("LANG=en_US.utf-8");
       return shell_exec($cmd);

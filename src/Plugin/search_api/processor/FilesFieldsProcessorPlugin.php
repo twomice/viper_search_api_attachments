@@ -161,13 +161,13 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Limit the number of items to index per field to the configured limit.
    *
-   *
-   * @param array $all_fids
+   * @param array
+   *   $all_fids
    *
    * @return array
    *   An array of $limit number of items.
    */
-  public function limitToAllowedNumber($all_fids) {
+  public function limitToAllowedNumber(array $all_fids) {
     $limit = 0;
     if (isset($this->configuration['number_indexed'])) {
       $limit = $this->configuration['number_indexed'];
@@ -187,10 +187,11 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Check if the file is allowed to be indexed.
    *
-   * @param object
-   *   $file A file object.
+   * @param object $file
+   *   A file object.
    *
    * @return bool
+   *   TRUE or FALSE
    */
   public function isFileIndexable($file) {
     // File should exist in disc.
@@ -221,8 +222,8 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Exclude files that exceed configured max size.
    *
-   * @param object
-   *   $file
+   * @param object $file
+   *   File object
    *
    * @return bool
    *   TRUE if the file size does not exceed configured max size.
@@ -250,8 +251,8 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    *
    * Only happens if the module is configured to do so(default behaviour).
    *
-   * @param object
-   *   $file
+   * @param object $file
+   *   File object
    *
    * @return bool
    *   TRUE if we should prevent current file from being indexed.
@@ -400,7 +401,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
       'ram',
       'rgb',
       'flv',
-      );
+    );
     return implode(' ', $excluded);
   }
 
@@ -415,6 +416,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    *   extensions.
    *
    * @return array
+   *   Array or mimes.
    */
   public function getExcludedMimes($extensions = NULL) {
     if (!$extensions && isset($this->configuration['excluded_mimes'])) {
