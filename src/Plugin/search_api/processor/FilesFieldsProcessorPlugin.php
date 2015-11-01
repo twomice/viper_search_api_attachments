@@ -164,7 +164,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * Limit the number of items to index per field to the configured limit.
    *
    * @param array $all_fids
-   *   Array of fids
+   *   Array of fids.
    *
    * @return array
    *   An array of $limit number of items.
