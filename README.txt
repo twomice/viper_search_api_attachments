@@ -55,12 +55,12 @@ search_api_solr README.txt, you need to update your solrconfig.xml file
 (full path can look like example/solr/collection1/conf/solrconfig.xml)
 Change the /update/extract request Handler class like this :
 
-   <requestHandler name="/update/extract"
-                   class="org.apache.solr.handler.extraction.ExtractingRequestHandler" >
+<requestHandler name="/update/extract"
+    class="org.apache.solr.handler.extraction.ExtractingRequestHandler" >
 
 This means that you delete this part:
--                  startup="lazy"
--                  class="solr.extraction.ExtractingRequestHandler" >
+- startup="lazy"
+- class="solr.extraction.ExtractingRequestHandler" >
 
 Then in example folder:
 cp -r ../contrib/extraction/lib solr/collection1/lib

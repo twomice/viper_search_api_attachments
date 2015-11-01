@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\search_api_attachments\Form\TextExtractorFormSettings.
+ */
+
 namespace Drupal\search_api_attachments\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -30,9 +35,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TextExtractorPluginManager $textExtractorPluginManager) {
+  public function __construct(ConfigFactoryInterface $config_factory, TextExtractorPluginManager $text_extractor_plugin_manager) {
     parent::__construct($config_factory);
-    $this->textExtractorPluginManager = $textExtractorPluginManager;
+    $this->textExtractorPluginManager = $text_extractor_plugin_manager;
   }
 
   /**
@@ -54,7 +59,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormID() {
+  public function getFormId() {
     return 'search_api_attachments_admin_form';
   }
 
@@ -159,7 +164,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
   public function getExtractionPluginInformations() {
     $options = array(
       'labels' => array(),
-      'descriptions' => array()
+      'descriptions' => array(),
     );
     foreach ($this->getTextExtractorPluginManager()->getDefinitions() as $plugin_id => $plugin_definition) {
       $options['labels'][$plugin_id] = Html::escape($plugin_definition['label']);
@@ -175,7 +180,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * extraction plugin method.
    *
    * @param array $form
+   *   The form array.
    * @param FormStateInterface $form_state
+   *   The form state object.
    */
   public function buildTextExtractorConfigForm(array &$form, FormStateInterface $form_state) {
     $form['text_extractor_config'] = array(
@@ -219,7 +226,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * Subform to test the configuration of an extraction plugin method.
    *
    * @param array $form
+   *   The form array.
    * @param FormStateInterface $form_state
+   *   The form state object.
    */
   public function buildTextExtractorTestResultForm(array &$form, FormStateInterface $form_state) {
     if (isset($form['text_extractor_config'])) {
@@ -244,9 +253,12 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * Ajax callback.
    *
    * @param array $form
+   *   The form array.
    * @param FormStateInterface $form_state
+   *   The form state object.
    *
-   * @return array
+   * @return
+   *   array
    */
   public static function buildAjaxTextExtractorConfigForm(array $form, FormStateInterface $form_state) {
     // We just need to return the relevant part of the form here.
@@ -255,9 +267,11 @@ class TextExtractorFormSettings extends ConfigFormBase {
 
   /**
    * Helper method to get/create a pdf test file and extract its data.
+   *
    * The file created is then deleted after successful extraction.
    *
-   * @return object $file
+   * @return
+   *   object $file
    */
   public function getTestFile() {
     $account = \Drupal::currentUser();
@@ -281,7 +295,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     }
     return $file;
   }
-  
+
   /**
    * Returns the text extractor plugin manager.
    *

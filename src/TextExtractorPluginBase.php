@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\search_api_attachments\TextExtractorPluginBase.
+ */
+
 namespace Drupal\search_api_attachments;
 
 use Drupal;
@@ -22,7 +27,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * {@inheritdoc}
    */
-  function __construct(array $configuration, $plugin_id, $plugin_definition) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
@@ -90,8 +95,9 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * Helper method to get the real path from an uri.
    *
-   * @param $uri
+   * @param string $uri
    *   The URI of the file, e.g. public://directory/file.jpg.
+   *
    * @return mixed
    *   The real path to the file if it is a local file. An URL otherwise.
    */
@@ -115,10 +121,10 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
    *   An array of the PDF MIME types.
    */
   public function getPdfMimeTypes() {
-    $mimeGuesser = \Drupal::service('file.mime_type.guesser');
-    $pdfMimeTypes = array();
-    $pdfMimeTypes[] = $mimeGuesser->guess('dummy.pdf');
-    return $pdfMimeTypes;
+    $mime_guesser = \Drupal::service('file.mime_type.guesser');
+    $pdf_mime_types = array();
+    $pdf_mime_types[] = $mime_guesser->guess('dummy.pdf');
+    return $pdf_mime_types;
   }
 
 }

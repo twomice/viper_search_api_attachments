@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\search_api_attachments\Plugin\search_api\processor\FilesFieldsProcessorPlugin.
+ */
+
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
 use Drupal\Core\Url;
@@ -48,9 +53,9 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    * {@inheritdoc}
    */
   public function __construct(
-  array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $textExtractorPluginManager) {
+  array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->textExtractorPluginManager = $textExtractorPluginManager;
+    $this->textExtractorPluginManager = $text_extractor_plugin_manager;
 
   }
 
@@ -65,8 +70,8 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     /** @var \Drupal\Core\StringTranslation\TranslationInterface $translation */
     $translation = $container->get('string_translation');
     $plugin->setStringTranslation($translation);
-    $mimeGuesser = $container->get('file.mime_type.guesser');
-    $plugin->mimeGuesser = $mimeGuesser;
+    $mime_guesser = $container->get('file.mime_type.guesser');
+    $plugin->mimeGuesser = $mime_guesser;
     return $plugin;
   }
 
@@ -132,17 +137,18 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Extract file data or get it from cache if available and cache it.
    *
-   * @param $file
+   * @param object $file
    *   A file object.
-   * @param $extractor_plugin
+   * @param string $extractor_plugin
    *   The plugin used to extract file content.
    *
-   * @return string $extracted_data
+   * @return string
+   *   $extracted_data
    */
   public function extractOrGetFromCache($file, $extractor_plugin) {
     $collection = 'search_api_attachments';
     $key = $collection . ':' . $file->id();
-    if ($cache =  \Drupal::keyValue($collection)->get($key)) {
+    if ($cache = \Drupal::keyValue($collection)->get($key)) {
       $extracted_data = $cache;
     }
     else {
@@ -154,6 +160,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
 
   /**
    * Limit the number of items to index per field to the configured limit.
+   *
    *
    * @param array $all_fids
    *
@@ -180,10 +187,10 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Check if the file is allowed to be indexed.
    *
-   * @param $file
-   *   A file object.
+   * @param object
+   *   $file A file object.
    *
-   * @return boolean
+   * @return bool
    */
   public function isFileIndexable($file) {
     // File should exist in disc.
@@ -214,9 +221,10 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * Exclude files that exceed configured max size.
    *
-   * @param object $file
+   * @param object
+   *   $file
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the file size does not exceed configured max size.
    */
   public function isFileSizeAllowed($file) {
@@ -238,12 +246,14 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   }
 
   /**
-   * Exclude private files from being indexed if the module is configured to do
-   * so.(This is the default behaviour of the module)
+   * Exclude private files from being indexed.
    *
-   * @param object $file
+   * Only happens if the module is configured to do so(default behaviour).
    *
-   * @return boolean
+   * @param object
+   *   $file
+   *
+   * @return bool
    *   TRUE if we should prevent current file from being indexed.
    */
   public function isPrivateFileAllowed($file) {
@@ -345,7 +355,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
         $error = TRUE;
       }
       else {
-        $starts_integer = is_integer((int)$size_info[0]);
+        $starts_integer = is_int((int) $size_info[0]);
         $unit_expected = in_array($size_info[1], array('KB', 'MB', 'GB'));
         $error = !$starts_integer || !$unit_expected;
       }
@@ -374,17 +384,35 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    *   string of file extensions separated by a space.
    */
   public function defaultExcludedExtensions() {
-    $excluded = array('aif', 'art', 'avi', 'bmp', 'gif', 'ico', 'mov', 'oga', 'ogv', 'png', 'psd', 'ra', 'ram', 'rgb', 'flv');
+    $excluded = array(
+      'aif',
+      'art',
+      'avi',
+      'bmp',
+      'gif',
+      'ico',
+      'mov',
+      'oga',
+      'ogv',
+      'png',
+      'psd',
+      'ra',
+      'ram',
+      'rgb',
+      'flv',
+      );
     return implode(' ', $excluded);
   }
 
   /**
-   * Get a corresponding array of excluded mime types from a space separated
-   * string of file extensions.
+   * Get a corresponding array of excluded mime types.
+   *
+   * Obtained from a space separated string of file extensions.
    *
    * @param string $extensions
    *   If it's not null, the return will correspond to the extensions.
-   *   If it is null,the return will correspond to the default excluded extensions.
+   *   If it is null,the return will correspond to the default excluded
+   *   extensions.
    *
    * @return array
    */

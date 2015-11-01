@@ -1,16 +1,21 @@
 <?php
 
+/**
+ * @file
+ * Implement hooks and help functions to delete extracted files cache content.
+ */
+
 use Drupal\file\Entity\File;
 
 /**
- * Implements hook_ENTITY_TYPE_update() for file entities.
+ * Implements hook_ENTITY_TYPE_update().
  */
 function search_api_attachments_file_update(File $file) {
   _search_api_attachments_delete_cache($file);
 }
 
 /**
- * Implements hook_ENTITY_TYPE_delete() for file entities.
+ * Implements hook_ENTITY_TYPE_delete().
  */
 function search_api_attachments_file_delete(File $file) {
   _search_api_attachments_delete_cache($file);
@@ -32,6 +37,7 @@ function search_api_attachments_cache_flush() {
  * Helper function to delete a file extracted data cache.
  *
  * @param File $file
+ *   The file object.
  */
 function _search_api_attachments_delete_cache(File $file) {
   $collection = 'search_api_attachments';

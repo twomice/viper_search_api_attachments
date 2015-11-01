@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\search_api_attachments\Annotation\SearchApiAttachmentsTextExtractor.
+ */
+
 namespace Drupal\search_api_attachments\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -16,21 +21,21 @@ class SearchApiAttachmentsTextExtractor extends Plugin {
   /**
    * The plugin id.
    *
-   * @var string 
+   * @var string
    */
   public $id;
 
   /**
-   * The plugin label.
+   * The plugins label.
    *
-   * @var string 
+   * @var string
    */
   public $label;
 
   /**
    * The plugin description.
    *
-   * @var string 
+   * @var string
    */
   public $description;
 

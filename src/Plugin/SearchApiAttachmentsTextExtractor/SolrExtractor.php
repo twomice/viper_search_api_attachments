@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor\SolrExtractor.
+ */
+
 namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor;
 
 use Drupal\Component\Serialization\Json;
@@ -24,7 +29,7 @@ class SolrExtractor extends TextExtractorPluginBase {
     // Load the chosen Solr server entity.
     $conditions = array(
       'status' => TRUE,
-      'id' => $this->configuration['solr_server']
+      'id' => $this->configuration['solr_server'],
     );
     $server = \Drupal::entityManager()->getStorage('search_api_server')->loadByProperties($conditions);
     $server = reset($server);
@@ -84,7 +89,6 @@ class SolrExtractor extends TextExtractorPluginBase {
       '#required' => TRUE,
     );
 
-    //@todo test connection live
     return $form;
   }
 

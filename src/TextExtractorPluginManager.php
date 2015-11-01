@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\search_api_attachments\TextExtractorPluginManager.
+ */
+
 namespace Drupal\search_api_attachments;
 
 use Drupal\Core\Cache\CacheBackendInterface;
