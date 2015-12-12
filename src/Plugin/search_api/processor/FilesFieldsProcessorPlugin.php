@@ -100,7 +100,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   public function preprocessIndexItems(array &$items) {
     $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
     $extractor_plugin_id = $config->get('extraction_method');
-    if ($extractor_plugin_id) {
+    if ($extractor_plugin_id != '') {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
       foreach ($items as $item) {
@@ -110,29 +110,26 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
           }
           // Need to retrieve the files.
           $entity = $item->getOriginalObject()->getValue();
-          $filefield_values = $entity->get($field_name)->getValue();
+          if ($entity->hasField($field_name)) {
+            $filefield_values = $entity->get($field_name)->getValue();
 
-          $all_fids = array();
-          foreach ($filefield_values as $filefield_value) {
-            $all_fids[] = $filefield_value['target_id'];
-          }
-          $fids = $this->limitToAllowedNumber($all_fids);
-          // Retrieve the files.
-          $files = \Drupal::entityManager()->getStorage('file')->loadMultiple($fids);
-          $extraction = '';
-          foreach ($files as $file) {
-            if ($this->isFileIndexable($file)) {
-              $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
+            $all_fids = array();
+            foreach ($filefield_values as $filefield_value) {
+              $all_fids[] = $filefield_value['target_id'];
             }
+            $fids = $this->limitToAllowedNumber($all_fids);
+            // Retrieve the files.
+            $files = \Drupal::entityManager()->getStorage('file')->loadMultiple($fids);
+            $extraction = '';
+            foreach ($files as $file) {
+              if ($this->isFileIndexable($file)) {
+                $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
+              }
+            }
+            $field->addValue($extraction);
           }
-          $field->addValue($extraction);
         }
       }
-    }
-    else {
-      $url = Url::fromRoute('search_api_attachments.admin_form');
-      $config_link = \Drupal::l($this->t('configuration page'), $url);
-      drupal_set_message($this->t('Please configure an extraction method first by visiting the @config_link', array('@config_link' => $config_link)), 'warning');
     }
   }
 
