@@ -202,18 +202,15 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $ajax_submitted_empty_value = $form_state->getValue('form_id');
     }
     $form['text_extractor_config']['#type'] = 'details';
-    $form['text_extractor_config']['#title'] = $this->t('Configure extractor %plugin', array('%plugin' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]));
-    $form['text_extractor_config']['#description'] = $this->getExtractionPluginInformations()['descriptions'][$extractor_plugin_id];
     $form['text_extractor_config']['#open'] = TRUE;
     // If the form is submitted with ajax and the empty value is chosen or if
     // there is no configuration yet and no extraction method was chosen in the
     // form.
-    if (isset($ajax_submitted_empty_value) || !$extractor_plugin_id) {
+    if (isset($ajax_submitted_empty_value) || $extractor_plugin_id == '') {
       $form['text_extractor_config']['#title'] = $this->t('Please make a choice');
       $form['text_extractor_config']['#description'] = $this->t('Please choose an extraction method in the list above.');
     }
-
-    if ($extractor_plugin_id && !isset($ajax_submitted_empty_value)) {
+    else {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
       $text_extractor_form = $extractor_plugin->buildConfigurationForm(array(), $form_state);
