@@ -85,7 +85,9 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
     $python_path = $values['text_extractor_config']['python_path'];
     $python_pdf2txt_script = $values['text_extractor_config']['python_pdf2txt_script'];
     if (!file_exists($python_pdf2txt_script)) {
-      $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('The file %path does not exist.', array('%path' => $python_pdf2txt_script)));
+      if (isset($form['text_extractor_config']['python_pdf2txt_script'])) {
+        $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('The file %path does not exist.', array('%path' => $python_pdf2txt_script)));
+      }
     }
     // Check that the file is an executable Python Script.
     else {
@@ -93,8 +95,10 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
       exec($cmd, $output, $return_code);
       // $return_code = 1 if it fails. 100 instead.
       if ($return_code != 100) {
-        $form_state->setError($form['text_extractor_config']['python_path'], '');
-        $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('Python Pdf2txt script file is not executable.'));
+        if (isset($form['text_extractor_config']['python_path']) && isset($form['text_extractor_config']['python_pdf2txt_script'])) {
+          $form_state->setError($form['text_extractor_config']['python_path'], '');
+          $form_state->setError($form['text_extractor_config']['python_pdf2txt_script'], $this->t('Python Pdf2txt script file is not executable.'));
+        }
       }
     }
   }
