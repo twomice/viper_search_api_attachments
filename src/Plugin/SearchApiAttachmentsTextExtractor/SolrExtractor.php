@@ -33,7 +33,7 @@ class SolrExtractor extends TextExtractorPluginBase {
       'status' => TRUE,
       'id' => $this->configuration['solr_server'],
     );
-    $server = \Drupal::entityManager()->getStorage('search_api_server')->loadByProperties($conditions);
+    $server = \Drupal::entityTypeManager()->getStorage('search_api_server')->loadByProperties($conditions);
     $server = reset($server);
     // Get the Solr backend.
     $backend = $server->getBackend();
@@ -75,7 +75,7 @@ class SolrExtractor extends TextExtractorPluginBase {
       'backend' => 'search_api_solr',
     );
 
-    $search_api_solr_servers = \Drupal::entityManager()->getStorage('search_api_server')->loadByProperties($conditions);
+    $search_api_solr_servers = \Drupal::entityTypeManager()->getStorage('search_api_server')->loadByProperties($conditions);
     $options = array();
     foreach ($search_api_solr_servers as $solr_server) {
       $options[$solr_server->id()] = $solr_server->label();
