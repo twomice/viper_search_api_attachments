@@ -72,7 +72,11 @@ class SolrExtractor extends TextExtractorPluginBase {
     $form = array();
     $conditions = array(
       'status' => TRUE,
-      'backend' => 'search_api_solr',
+      'backend' => array(
+        'search_api_solr',
+        'search_api_solr_acquia',
+        'search_api_solr_acquia_multi_subs',
+      ),
     );
 
     $search_api_solr_servers = \Drupal::entityTypeManager()->getStorage('search_api_server')->loadByProperties($conditions);
