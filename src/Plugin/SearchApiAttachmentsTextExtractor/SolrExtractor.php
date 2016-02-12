@@ -44,6 +44,12 @@ class SolrExtractor extends TextExtractorPluginBase {
     // setExtractOnly is only available in solarium 3.3.0 and up.
     $query->setExtractOnly(TRUE);
     $query->setFile($filepath);
+
+    // Override the extract handler, @see \Solarium\QueryType\Extract\Query::setHandler().
+    if (isset($this->configuration['solr_tika_path'])) {
+      $query->setHandler($this->configuration['solr_tika_path']);
+    }
+
     // Execute the query.
     $result = $client->extract($query);
     $response = $result->getResponse();
@@ -93,6 +99,17 @@ class SolrExtractor extends TextExtractorPluginBase {
       '#options' => $options,
       '#default_value' => $this->configuration['solr_server'],
       '#required' => TRUE,
+    );
+
+    $form['solr_tika_path'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Tika path'),
+      '#description' => $this->t('Specify a custom Tika extractor handler for
+        the Solr server, e.g. update/extract, or extract/tika. When no value
+        provided, the default "update/extract" is used. When no value is
+        set, then the handler provided by Solarium is used.'),
+      '#default_value' => empty($this->configuration['solr_tika_path']) ?
+        'update/extract' : $this->configuration['solr_tika_path'],
     );
 
     return $form;
