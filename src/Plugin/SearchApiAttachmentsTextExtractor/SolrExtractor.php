@@ -130,6 +130,7 @@ class SolrExtractor extends TextExtractorPluginBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['solr_server'] = $form_state->getValue(array('text_extractor_config', 'solr_server'));
+    $this->configuration['solr_tika_path'] = $form_state->getValue(array('text_extractor_config', 'solr_tika_path'));
     parent::submitConfigurationForm($form, $form_state);
   }
 
