@@ -21,12 +21,12 @@ search_api_attachments.admin_config:
       type: mapping
       label: 'Solr extractor configuration'
       mapping:
-        'solr_server':
+        solr_server:
           type: string
           label: 'Solr server'
-        'solr_tika_path':
+        solr_tika_path:
           type: string
-          label: 'Path to the tika endpoint on the solr server.'
+          label: 'Solr extractor handler (e.g. update/extract)'
     python_pdf2txt_extractor_configuration:
       type: mapping
       label: 'Python Pdf2txt extractor configuration'
