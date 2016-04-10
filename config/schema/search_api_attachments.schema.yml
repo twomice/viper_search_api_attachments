@@ -1,7 +1,7 @@
 # Schema for the configuration files of the Search API attachments module.
 
 search_api_attachments.admin_config:
-  type: mapping
+  type: config_object
   label: 'Search API attachments settings'
   mapping:
     extraction_method:
