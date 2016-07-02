@@ -122,7 +122,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
                 ->loadMultiple($fids);
               $extraction = '';
               foreach ($files as $file) {
-                if ($this->isFileIndexable($file)) {
+                if ($this->isFileIndexable($file, $item, $field_name)) {
                   $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
                 }
               }
@@ -189,11 +189,15 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
    *
    * @param object $file
    *   A file object.
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The item the file was referenced in.
+   * @param string|null $field_name
+   *   The name of the field the file was referenced in, if applicable.
    *
    * @return bool
    *   TRUE or FALSE
    */
-  public function isFileIndexable($file) {
+  public function isFileIndexable($file, $item, $field_name = NULL) {
     // File should exist in disc.
     $indexable = file_exists($file->getFileUri());
     if (!$indexable) {
@@ -216,6 +220,11 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     }
     // Whether a private file can be indexed or not.
     $indexable = $indexable && $this->isPrivateFileAllowed($file);
+    if (!$indexable) {
+      return FALSE;
+    }
+    $result = \Drupal::moduleHandler()->invokeAll('search_api_attachments_indexable', $file, $item, $field_name);
+    $indexable = !in_array(FALSE, $result, TRUE);
     return $indexable;
   }
 
