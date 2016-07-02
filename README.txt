@@ -117,3 +117,8 @@ SIMPLE USAGE EXAMPLE
     any default results.
 13) Go to admin/config/search/search-api/index/my_index and Index items
 14) Go to /saa and search for any term in the title, body or in the pdf file :)
+
+HOOKS
+-----
+This module provides hook_search_api_attachments_indexable.
+See more details in search_api_attachments.api.php
