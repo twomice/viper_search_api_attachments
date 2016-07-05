@@ -229,7 +229,7 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
     if (!$indexable) {
       return FALSE;
     }
-    $result = \Drupal::moduleHandler()->invokeAll('search_api_attachments_indexable', $file, $item, $field_name);
+    $result = \Drupal::moduleHandler()->invokeAll('search_api_attachments_indexable', array($file, $item, $field_name));
     $indexable = !in_array(FALSE, $result, TRUE);
     return $indexable;
   }
