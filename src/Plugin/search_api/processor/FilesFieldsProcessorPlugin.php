@@ -11,10 +11,12 @@ use Drupal\Component\Utility\Bytes;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
 use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\search_api\Processor\ProcessorProperty;
 
 /**
  * Provides file fields processor.
@@ -24,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   label = @Translation("File attachments"),
  *   description = @Translation("Adds the file attachments content to the indexed data."),
  *   stages = {
- *     "preprocess_index" = 0
+ *     "add_properties" = 0,
  *   }
  * )
  */
@@ -56,7 +58,6 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
-
   }
 
   /**
@@ -78,56 +79,61 @@ class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function alterPropertyDefinitions(array &$properties, DatasourceInterface $datasource = NULL) {
-    if ($datasource) {
-      return;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPropertyDefinitions(DatasourceInterface $datasource = NULL) {
+    $properties = array();
+
+    if (!$datasource) {
+      foreach ($this->getFileFields() as $field_name => $label) {
+        $definition = array(
+          'label' => $this->t('Search api attachments: @label', array('@label' => $label)),
+          'description' => $this->t('Search api attachments: @label', array('@label' => $label)),
+          'type' => 'string',
+          'processor_id' => $this->getPluginId(),
+        );
+        $properties['search_api_attachments_' . $field_name] = new ProcessorProperty($definition);
+      }
     }
-    foreach ($this->getFileFields() as $field_name => $label) {
-      $definition = array(
-        'label' => $this->t('Search api attachments: @label', array('@label' => $label)),
-        'description' => $this->t('Search api attachments: @label', array('@label' => $label)),
-        'type' => 'string',
-      );
-      $properties['search_api_attachments_' . $field_name] = new DataDefinition($definition);
-    }
+
+    return $properties;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preprocessIndexItems(array &$items) {
+  public function addFieldValues(ItemInterface $item) {
     $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
     $extractor_plugin_id = $config->get('extraction_method');
     if ($extractor_plugin_id != '') {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
-      /** @var \Drupal\search_api\Item\ItemInterface $item */
-      foreach ($items as $item) {
-        foreach ($this->getFileFields() as $field_name => $label) {
-          $property_path = 'search_api_attachments_' . $field_name;
-          foreach ($this->filterForPropertyPath($item->getFields(), $property_path) as $field) {
-            // Need to retrieve the files.
-            $entity = $item->getOriginalObject()->getValue();
-            if ($entity->hasField($field_name)) {
-              $filefield_values = $entity->get($field_name)->getValue();
+      foreach ($this->getFileFields() as $field_name => $label) {
+        $property_path = 'search_api_attachments_' . $field_name;
+        foreach ($this->filterForPropertyPath($item->getFields(), $property_path) as $field) {
+          // Need to retrieve the files.
+          $entity = $item->getOriginalObject()->getValue();
+          if ($entity->hasField($field_name)) {
+            $filefield_values = $entity->get($field_name)->getValue();
 
-              $all_fids = array();
-              foreach ($filefield_values as $filefield_value) {
-                $all_fids[] = $filefield_value['target_id'];
-              }
-              $fids = $this->limitToAllowedNumber($all_fids);
-              // Retrieve the files.
-              $files = \Drupal::entityTypeManager()
+            $all_fids = array();
+            foreach ($filefield_values as $filefield_value) {
+              $all_fids[] = $filefield_value['target_id'];
+            }
+            $fids = $this->limitToAllowedNumber($all_fids);
+            // Retrieve the files.
+            $files = \Drupal::entityTypeManager()
                 ->getStorage('file')
                 ->loadMultiple($fids);
-              $extraction = '';
-              foreach ($files as $file) {
-                if ($this->isFileIndexable($file, $item, $field_name)) {
-                  $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
-                }
+            $extraction = '';
+            foreach ($files as $file) {
+              if ($this->isFileIndexable($file, $item, $field_name)) {
+                $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
               }
-              $field->addValue($extraction);
             }
+            $field->addValue($extraction);
           }
         }
       }
