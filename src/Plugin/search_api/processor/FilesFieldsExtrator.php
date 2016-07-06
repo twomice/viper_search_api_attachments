@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\search_api_attachments\Plugin\search_api\processor\FilesFieldsProcessorPlugin.
+ * Contains \Drupal\search_api_attachments\Plugin\search_api\processor\FilesFieldsExtrator.
  */
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
@@ -30,7 +30,7 @@ use Drupal\search_api\Processor\ProcessorProperty;
  *   }
  * )
  */
-class FilesFieldsProcessorPlugin extends ProcessorPluginBase {
+class FilesFieldsExtrator extends ProcessorPluginBase {
 
   /**
    * Name of the config being edited.
