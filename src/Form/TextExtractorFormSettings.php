@@ -94,7 +94,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Preserve cached extractions across cache clears.'),
       '#default_value' => $config->get('preserve_cache'),
-      '#description' => $this->t('When checked, <a href="@url">clearing the sidewide cache</a> will not clear the cache of extracted files.', array('@url' => $url)),
+      '#description' => $this->t('When checked, <a href="@url">clearing the sitewide cache</a> will not clear the cache of extracted files.', array('@url' => $url)),
     );
     $form['submit'] = array(
       '#type' => 'submit',
