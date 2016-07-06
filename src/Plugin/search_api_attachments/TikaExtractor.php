@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor\TikaExtractor.
+ * Contains \Drupal\search_api_attachments\Plugin\search_api_attachments\TikaExtractor.
  */
 
-namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor;
+namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;

@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor\SolrExtractor.
+ * Contains \Drupal\search_api_attachments\Plugin\search_api_attachments\SolrExtractor.
  */
 
-namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor;
+namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Form\FormStateInterface;

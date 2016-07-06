@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor\PdftotextExtractor.
+ * Contains \Drupal\search_api_attachments\Plugin\search_api_attachments\PdftotextExtractor.
  */
 
-namespace Drupal\search_api_attachments\Plugin\SearchApiAttachmentsTextExtractor;
+namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
