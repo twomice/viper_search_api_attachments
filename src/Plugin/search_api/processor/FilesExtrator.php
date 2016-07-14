@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\search_api_attachments\Plugin\search_api\processor\FilesFieldsExtrator.
+ * Contains \Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtrator.
  */
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
@@ -30,7 +30,7 @@ use Drupal\search_api\Processor\ProcessorProperty;
  *   }
  * )
  */
-class FilesFieldsExtrator extends ProcessorPluginBase {
+class FilesExtrator extends ProcessorPluginBase {
 
   /**
    * Name of the config being edited.
@@ -87,7 +87,8 @@ class FilesFieldsExtrator extends ProcessorPluginBase {
     $properties = array();
 
     if (!$datasource) {
-      foreach ($this->getFileFields() as $field_name => $label) {
+      // Add properties for all index available file fields and for file entity.
+      foreach ($this->getFileFieldsAndFileEntityItems() as $field_name => $label) {
         $definition = array(
           'label' => $this->t('Search api attachments: @label', array('@label' => $label)),
           'description' => $this->t('Search api attachments: @label', array('@label' => $label)),
@@ -105,17 +106,26 @@ class FilesFieldsExtrator extends ProcessorPluginBase {
    * {@inheritdoc}
    */
   public function addFieldValues(ItemInterface $item) {
+    $extraction = '';
+    $files = [];
     $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
     $extractor_plugin_id = $config->get('extraction_method');
     if ($extractor_plugin_id != '') {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
-      foreach ($this->getFileFields() as $field_name => $label) {
+      foreach ($this->getFileFieldsAndFileEntityItems() as $field_name => $label) {
         $property_path = 'search_api_attachments_' . $field_name;
         foreach ($this->filterForPropertyPath($item->getFields(), $property_path) as $field) {
-          // Need to retrieve the files.
+
+          // Get the entity.
           $entity = $item->getOriginalObject()->getValue();
-          if ($entity->hasField($field_name)) {
+
+          // If we process 'file_entity' then $entity is a file, else it's an
+          // entity that has a file field.
+          if ($field_name == 'file_entity') {
+            $files[] = $entity;
+          }
+          elseif ($entity->hasField($field_name)) {
             $filefield_values = $entity->get($field_name)->getValue();
 
             $all_fids = array();
@@ -127,14 +137,13 @@ class FilesFieldsExtrator extends ProcessorPluginBase {
             $files = \Drupal::entityTypeManager()
                 ->getStorage('file')
                 ->loadMultiple($fids);
-            $extraction = '';
-            foreach ($files as $file) {
-              if ($this->isFileIndexable($file, $item, $field_name)) {
-                $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
-              }
-            }
-            $field->addValue($extraction);
           }
+          foreach ($files as $file) {
+            if ($this->isFileIndexable($file, $item, $field_name)) {
+              $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
+            }
+          }
+          $field->addValue($extraction);
         }
       }
     }
@@ -294,24 +303,30 @@ class FilesFieldsExtrator extends ProcessorPluginBase {
   }
 
   /**
-   * Helper method to get the file fields of indexed bundles.
+   * Helper method to get the file fields of indexed bundles and an entity
+   * file general item.
    *
    * @return array
-   *   An array of file fields. With field name as key and label as value.
+   *   An array of file field with field name as key and label as value and
+   *   an element for generic file entity item.
    */
-  protected function getFileFields() {
-    $file_fields = array();
+  protected function getFileFieldsAndFileEntityItems() {
+    $file_elements = array();
     // Retrieve file fields of indexed bundles.
+
     foreach ($this->getIndex()->getDatasources() as $datasource) {
+      if ($datasource->getPluginId() == 'entity:file') {
+        $file_elements['file_entity'] = $this->t('File entity');
+      }
       foreach ($datasource->getPropertyDefinitions() as $property) {
         if ($property instanceof FieldConfig) {
           if ($property->get('field_type') == 'file') {
-            $file_fields[$property->get('field_name')] = $property->get('label');
+            $file_elements[$property->get('field_name')] = $property->get('label');
           }
         }
       }
     }
-    return $file_fields;
+    return $file_elements;
   }
 
   /**
