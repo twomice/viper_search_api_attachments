@@ -43,7 +43,12 @@ class FilesExtrator extends ProcessorPluginBase {
    * This is used per example in a File datasource index or mixed
    * datasources index.
    */
-  const SAAFILEENTITY = 'saa_file_entity';
+  const SAA_FILE_ENTITY = 'saa_file_entity';
+
+  /**
+   * Prefix of the properties provided by this module.
+   */
+  const SAA_PREFIX = 'saa_';
 
   /**
    * The plugin manager for our text extractor.
@@ -103,7 +108,7 @@ class FilesExtrator extends ProcessorPluginBase {
           'type' => 'string',
           'processor_id' => $this->getPluginId(),
         );
-        $properties['search_api_attachments_' . $field_name] = new ProcessorProperty($definition);
+        $properties[static::SAA_PREFIX . $field_name] = new ProcessorProperty($definition);
       }
     }
 
@@ -125,15 +130,15 @@ class FilesExtrator extends ProcessorPluginBase {
       $is_entity_type_file = $entity->getEntityTypeId() == 'file';
       foreach ($this->getFileFieldsAndFileEntityItems() as $field_name => $label) {
         // If the parent entity is not a file, no need to parse the
-        // saa static::SAAFILEENTITY item.
-        if (!$is_entity_type_file && $field_name == static::SAAFILEENTITY) {
+        // saa static::SAA_FILE_ENTITY item.
+        if (!$is_entity_type_file && $field_name == static::SAA_FILE_ENTITY) {
           break;
         }
-        if ($is_entity_type_file && $field_name == static::SAAFILEENTITY) {
+        if ($is_entity_type_file && $field_name == static::SAA_FILE_ENTITY) {
           $files[] = $entity;
         }
 
-        $property_path = 'search_api_attachments_' . $field_name;
+        $property_path = static::SAA_PREFIX . $field_name;
 
         // A way to load $field.
         foreach ($this->filterForPropertyPath($item->getFields(), $property_path) as $field) {
@@ -332,7 +337,7 @@ class FilesExtrator extends ProcessorPluginBase {
 
     foreach ($this->getIndex()->getDatasources() as $datasource) {
       if ($datasource->getPluginId() == 'entity:file') {
-        $file_elements[static::SAAFILEENTITY] = $this->t('File entity');
+        $file_elements[static::SAA_FILE_ENTITY] = $this->t('File entity');
       }
       foreach ($datasource->getPropertyDefinitions() as $property) {
         if ($property instanceof FieldConfig) {
