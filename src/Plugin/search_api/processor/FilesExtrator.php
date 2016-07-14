@@ -38,6 +38,14 @@ class FilesExtrator extends ProcessorPluginBase {
   const CONFIGNAME = 'search_api_attachments.admin_config';
 
   /**
+   * Name of the "virtual" field that handles file entity type extractions.
+   *
+   * This is used per example in a File datasource index or mixed
+   * datasources index.
+   */
+  const SAAFILEENTITY = 'saa_file_entity';
+
+  /**
    * The plugin manager for our text extractor.
    *
    * @var \Drupal\search_api_attachments\TextExtractorPluginManager
@@ -106,26 +114,30 @@ class FilesExtrator extends ProcessorPluginBase {
    * {@inheritdoc}
    */
   public function addFieldValues(ItemInterface $item) {
-    $extraction = '';
     $files = [];
     $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
     $extractor_plugin_id = $config->get('extraction_method');
     if ($extractor_plugin_id != '') {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->textExtractorPluginManager->createInstance($extractor_plugin_id, $configuration);
+      // Get the entity.
+      $entity = $item->getOriginalObject()->getValue();
+      $is_entity_type_file = $entity->getEntityTypeId() == 'file';
       foreach ($this->getFileFieldsAndFileEntityItems() as $field_name => $label) {
+        // If the parent entity is not a file, no need to parse the
+        // saa static::SAAFILEENTITY item.
+        if (!$is_entity_type_file && $field_name == static::SAAFILEENTITY) {
+          break;
+        }
+        if ($is_entity_type_file && $field_name == static::SAAFILEENTITY) {
+          $files[] = $entity;
+        }
+
         $property_path = 'search_api_attachments_' . $field_name;
+
+        // A way to load $field.
         foreach ($this->filterForPropertyPath($item->getFields(), $property_path) as $field) {
-
-          // Get the entity.
-          $entity = $item->getOriginalObject()->getValue();
-
-          // If we process 'file_entity' then $entity is a file, else it's an
-          // entity that has a file field.
-          if ($field_name == 'file_entity') {
-            $files[] = $entity;
-          }
-          elseif ($entity->hasField($field_name)) {
+          if ($entity->hasField($field_name)) {
             $filefield_values = $entity->get($field_name)->getValue();
 
             $all_fids = array();
@@ -138,12 +150,16 @@ class FilesExtrator extends ProcessorPluginBase {
                 ->getStorage('file')
                 ->loadMultiple($fids);
           }
-          foreach ($files as $file) {
-            if ($this->isFileIndexable($file, $item, $field_name)) {
-              $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
+          if (!empty($files)) {
+            $extraction = '';
+
+            foreach ($files as $file) {
+              if ($this->isFileIndexable($file, $item, $field_name)) {
+                $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
+              }
             }
+            $field->addValue($extraction);
           }
-          $field->addValue($extraction);
         }
       }
     }
@@ -316,7 +332,7 @@ class FilesExtrator extends ProcessorPluginBase {
 
     foreach ($this->getIndex()->getDatasources() as $datasource) {
       if ($datasource->getPluginId() == 'entity:file') {
-        $file_elements['file_entity'] = $this->t('File entity');
+        $file_elements[static::SAAFILEENTITY] = $this->t('File entity');
       }
       foreach ($datasource->getPropertyDefinitions() as $property) {
         if ($property instanceof FieldConfig) {
