@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\search_api_attachments\Plugin\search_api_attachments\PythonPdf2txtExtractor.
- */
-
 namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
+use Drupal\file\Entity\File;
 
 /**
  * Provides python pdf2text extractor.
@@ -24,13 +20,13 @@ class PythonPdf2txtExtractor extends TextExtractorPluginBase {
   /**
    * Extract file with python Pdf2txt library.
    *
-   * @param object $file
+   * @param \Drupal\file\Entity\File $file
    *   A file object.
    *
    * @return string
    *   The text extracted from the file.
    */
-  public function extract($file) {
+  public function extract(File $file) {
     if (in_array($file->getMimeType(), $this->getPdfMimeTypes())) {
       $filepath = $this->getRealpath($file->getFileUri());
       // Restore the locale.

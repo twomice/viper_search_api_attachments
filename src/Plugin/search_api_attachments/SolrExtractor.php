@@ -1,16 +1,17 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\search_api_attachments\Plugin\search_api_attachments\SolrExtractor.
- */
-
 namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Drupal\file\Entity\File;
 
 /**
  * Provides solr extractor.
@@ -24,18 +25,55 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 class SolrExtractor extends TextExtractorPluginBase {
 
   /**
+   * Entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * {@inheritdoc}
    */
-  public function extract($file) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypeGuesserInterface $mime_type_guesser, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $config_factory, $stream_wrapper_manager, $mime_type_guesser);
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('config.factory'),
+      $container->get('stream_wrapper_manager'),
+      $container->get('file.mime_type.guesser'),
+      $container->get('entity_type.manager')
+    );
+  }
+
+  /**
+   * Extract file with a search api solr backend.
+   *
+   * @param \Drupal\file\Entity\File $file
+   *   A file object.
+   *
+   * @return string
+   *   The text extracted from the file.
+   */
+  public function extract(File $file) {
     $filepath = $this->getRealpath($file->getFileUri());
     // Load the chosen Solr server entity.
     $conditions = array(
       'status' => TRUE,
       'id' => $this->configuration['solr_server'],
     );
-    $server = \Drupal::entityTypeManager()->getStorage('search_api_server')->loadByProperties($conditions);
+    $server = $this->entityTypeManager->getStorage('search_api_server')->loadByProperties($conditions);
     $server = reset($server);
     // Get the Solr backend.
+    /** @var \Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend $backend */
     $backend = $server->getBackend();
     // Initialise the Client.
     $client = $backend->getSolrConnection();
@@ -45,7 +83,8 @@ class SolrExtractor extends TextExtractorPluginBase {
     $query->setExtractOnly(TRUE);
     $query->setFile($filepath);
 
-    // Override the extract handler, @see \Solarium\QueryType\Extract\Query::setHandler().
+    // Override the extract handler.
+    // @see \Solarium\QueryType\Extract\Query::setHandler().
     if (isset($this->configuration['solr_tika_path'])) {
       $query->setHandler($this->configuration['solr_tika_path']);
     }
@@ -85,7 +124,7 @@ class SolrExtractor extends TextExtractorPluginBase {
       ),
     );
 
-    $search_api_solr_servers = \Drupal::entityTypeManager()->getStorage('search_api_server')->loadByProperties($conditions);
+    $search_api_solr_servers = $this->entityTypeManager->getStorage('search_api_server')->loadByProperties($conditions);
     $options = array();
     foreach ($search_api_solr_servers as $solr_server) {
       $options[$solr_server->id()] = $solr_server->label();
@@ -108,8 +147,7 @@ class SolrExtractor extends TextExtractorPluginBase {
         the Solr server, e.g. update/extract, or extract/tika. When no value
         provided, the default "update/extract" is used. When no value is
         set, then the handler provided by Solarium is used.'),
-      '#default_value' => empty($this->configuration['solr_tika_path']) ?
-        'update/extract' : $this->configuration['solr_tika_path'],
+      '#default_value' => empty($this->configuration['solr_tika_path']) ? 'update/extract' : $this->configuration['solr_tika_path'],
     );
 
     return $form;

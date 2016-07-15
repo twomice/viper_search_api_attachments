@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\search_api_attachments\Plugin\search_api_attachments\TikaExtractor.
- */
-
 namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
+use Drupal\file\Entity\File;
 
 /**
  * Provides tika extractor.
@@ -24,13 +20,13 @@ class TikaExtractor extends TextExtractorPluginBase {
   /**
    * Extract file with Tika library.
    *
-   * @param object $file
+   * @param \Drupal\file\Entity\File $file
    *   A file object.
    *
    * @return string
    *   The text extracted from the file.
    */
-  public function extract($file) {
+  public function extract(File $file) {
     $filepath = $this->getRealpath($file->getFileUri());
     $tika = realpath($this->configuration['tika_path']);
     $java = $this->configuration['java_path'];

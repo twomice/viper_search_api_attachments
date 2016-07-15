@@ -1,22 +1,23 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtrator.
- */
-
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
 use Drupal\Component\Utility\Bytes;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\TypedData\DataDefinition;
 use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
 use Drupal\search_api\Datasource\DatasourceInterface;
+use Drupal\search_api_attachments\TextExtractorPluginInterface;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\search_api\Processor\ProcessorProperty;
+use Drupal\file\Entity\File;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 
 /**
  * Provides file fields processor.
@@ -62,36 +63,65 @@ class FilesExtrator extends ProcessorPluginBase {
    *
    * @var \Drupal\Core\File\MimeType\MimeTypeGuesser
    */
-  protected $mimeGuesser;
+  protected $mimeTypeGuesser;
+
+  /**
+   * Config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * Entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Key value service.
+   *
+   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
+   */
+  protected $keyValue;
+
+  /**
+   * Module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(
-  array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, MimeTypeGuesserInterface $mime_type_guesser, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
+    $this->mimeTypeGuesser = $mime_type_guesser;
+    $this->configFactory = $config_factory;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->keyValue = $key_value;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $plugin = new static(
-        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor')
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('plugin.manager.search_api_attachments.text_extractor'),
+      $container->get('file.mime_type.guesser'),
+      $container->get('config.factory'),
+      $container->get('entity_type.manager'),
+      $container->get('keyvalue'),
+      $container->get('module_handler')
     );
-
-    /** @var \Drupal\Core\StringTranslation\TranslationInterface $translation */
-    $translation = $container->get('string_translation');
-    $plugin->setStringTranslation($translation);
-    $mime_guesser = $container->get('file.mime_type.guesser');
-    $plugin->mimeGuesser = $mime_guesser;
-    return $plugin;
   }
-
-  /**
-   * {@inheritdoc}
-   */
 
   /**
    * {@inheritdoc}
@@ -120,7 +150,7 @@ class FilesExtrator extends ProcessorPluginBase {
    */
   public function addFieldValues(ItemInterface $item) {
     $files = [];
-    $config = \Drupal::configFactory()->getEditable(static::CONFIGNAME);
+    $config = $this->configFactory->getEditable(static::CONFIGNAME);
     $extractor_plugin_id = $config->get('extraction_method');
     if ($extractor_plugin_id != '') {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
@@ -151,7 +181,7 @@ class FilesExtrator extends ProcessorPluginBase {
             }
             $fids = $this->limitToAllowedNumber($all_fids);
             // Retrieve the files.
-            $files = \Drupal::entityTypeManager()
+            $files = $this->entityTypeManager
                 ->getStorage('file')
                 ->loadMultiple($fids);
           }
@@ -173,23 +203,23 @@ class FilesExtrator extends ProcessorPluginBase {
   /**
    * Extract file data or get it from cache if available and cache it.
    *
-   * @param object $file
+   * @param \Drupal\file\Entity\File $file
    *   A file object.
-   * @param string $extractor_plugin
+   * @param \Drupal\search_api_attachments\TextExtractorPluginInterface $extractor_plugin
    *   The plugin used to extract file content.
    *
    * @return string
    *   $extracted_data
    */
-  public function extractOrGetFromCache($file, $extractor_plugin) {
+  public function extractOrGetFromCache(File $file, TextExtractorPluginInterface $extractor_plugin) {
     $collection = 'search_api_attachments';
     $key = $collection . ':' . $file->id();
-    if ($cache = \Drupal::keyValue($collection)->get($key)) {
+    if ($cache = $this->keyValue->get($collection)->get($key)) {
       $extracted_data = $cache;
     }
     else {
       $extracted_data = $extractor_plugin->extract($file);
-      \Drupal::keyValue($collection)->set($key, $extracted_data);
+      $this->keyValue->get($collection)->set($key, $extracted_data);
     }
     return $extracted_data;
   }
@@ -233,7 +263,7 @@ class FilesExtrator extends ProcessorPluginBase {
    * @return bool
    *   TRUE or FALSE
    */
-  public function isFileIndexable($file, $item, $field_name = NULL) {
+  public function isFileIndexable($file, ItemInterface $item, $field_name = NULL) {
     // File should exist in disc.
     $indexable = file_exists($file->getFileUri());
     if (!$indexable) {
@@ -259,7 +289,10 @@ class FilesExtrator extends ProcessorPluginBase {
     if (!$indexable) {
       return FALSE;
     }
-    $result = \Drupal::moduleHandler()->invokeAll('search_api_attachments_indexable', array($file, $item, $field_name));
+    $result = $this->moduleHandler->invokeAll(
+      'search_api_attachments_indexable',
+      array($file, $item, $field_name)
+    );
     $indexable = !in_array(FALSE, $result, TRUE);
     return $indexable;
   }
@@ -324,8 +357,7 @@ class FilesExtrator extends ProcessorPluginBase {
   }
 
   /**
-   * Helper method to get the file fields of indexed bundles and an entity
-   * file general item.
+   * Get the file fields of indexed bundles and an entity file general item.
    *
    * @return array
    *   An array of file field with field name as key and label as value and
@@ -333,8 +365,8 @@ class FilesExtrator extends ProcessorPluginBase {
    */
   protected function getFileFieldsAndFileEntityItems() {
     $file_elements = array();
-    // Retrieve file fields of indexed bundles.
 
+    // Retrieve file fields of indexed bundles.
     foreach ($this->getIndex()->getDatasources() as $datasource) {
       if ($datasource->getPluginId() == 'entity:file') {
         $file_elements[static::SAA_FILE_ENTITY] = $this->t('File entity');
@@ -401,7 +433,6 @@ class FilesExtrator extends ProcessorPluginBase {
     parent::validateConfigurationForm($form, $form_state);
     $max_filesize = trim($form_state->getValue('max_filesize'));
     if ($max_filesize != '0') {
-      $error = FALSE;
       $size_info = explode(' ', $max_filesize);
       if (count($size_info) != 2) {
         $error = TRUE;
@@ -481,7 +512,7 @@ class FilesExtrator extends ProcessorPluginBase {
       }
       $excluded_mimes = array();
       foreach ($extensions as $extension) {
-        $excluded_mimes[] = $this->mimeGuesser->guess('dummy.' . $extension);
+        $excluded_mimes[] = $this->mimeTypeGuesser->guess('dummy.' . $extension);
       }
     }
     // Ensure we get an array of unique mime values because many extension can
