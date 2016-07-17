@@ -65,7 +65,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return array(static::CONFIGNAME);
+    return [static::CONFIGNAME];
   }
 
   /**
@@ -80,7 +80,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config(static::CONFIGNAME);
-    $form['extraction_method'] = array(
+    $form['extraction_method'] = [
       '#type' => 'select',
       '#title' => $this->t('Extraction method'),
       '#description' => $this->t('Select the extraction method you want to use.'),
@@ -88,13 +88,13 @@ class TextExtractorFormSettings extends ConfigFormBase {
       '#options' => $this->getExtractionPluginInformations()['labels'],
       '#default_value' => $config->get('extraction_method'),
       '#required' => TRUE,
-      '#ajax' => array(
-        'callback' => array(get_class($this), 'buildAjaxTextExtractorConfigForm'),
+      '#ajax' => [
+        'callback' => [get_class($this), 'buildAjaxTextExtractorConfigForm'],
         'wrapper' => 'search-api-attachments-extractor-config-form',
         'method' => 'replace',
         'effect' => 'fade',
-      ),
-    );
+      ],
+    ];
 
     $this->buildTextExtractorConfigForm($form, $form_state);
     $trigger = $form_state->getTriggeringElement();
@@ -102,16 +102,16 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $this->buildTextExtractorTestResultForm($form, $form_state);
     }
     $url = Url::fromRoute('system.performance_settings')->toString();
-    $form['preserve_cache'] = array(
+    $form['preserve_cache'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Preserve cached extractions across cache clears.'),
       '#default_value' => $config->get('preserve_cache'),
-      '#description' => $this->t('When checked, <a href=":url">clearing the sitewide cache</a> will not clear the cache of extracted files.', array(':url' => $url)),
-    );
-    $form['submit'] = array(
+      '#description' => $this->t('When checked, <a href=":url">clearing the sitewide cache</a> will not clear the cache of extracted files.', [':url' => $url]),
+    ];
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Submit and test extraction'),
-    );
+    ];
     return $form;
   }
 
@@ -163,19 +163,19 @@ class TextExtractorFormSettings extends ConfigFormBase {
         $error = $this->t('No error message was catched');
       }
       $data = [
-        'message' => $this->t("Unfortunately, the extraction doesn't seem to work with this configuration! (@error)", array('@error' => $error)),
+        'message' => $this->t("Unfortunately, the extraction doesn't seem to work with this configuration! (@error)", ['@error' => $error]),
         'type' => 'error',
       ];
     }
     else {
       $data = [
-        'message' => $this->t('Extracted data: %extracted_data', array('%extracted_data' => $extracted_data)),
+        'message' => $this->t('Extracted data: %extracted_data', ['%extracted_data' => $extracted_data]),
         'type' => 'ok',
       ];
     }
-    $storage = array(
+    $storage = [
       'extracted_test_text' => $data,
-    );
+    ];
 
     $form_state->setStorage($storage);
     $form_state->setRebuild();
@@ -189,10 +189,10 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *   and their labels or descriptions.
    */
   public function getExtractionPluginInformations() {
-    $options = array(
-      'labels' => array(),
-      'descriptions' => array(),
-    );
+    $options = [
+      'labels' => [],
+      'descriptions' => [],
+    ];
     foreach ($this->getTextExtractorPluginManager()->getDefinitions() as $plugin_id => $plugin_definition) {
       $options['labels'][$plugin_id] = Html::escape($plugin_definition['label']);
       $options['descriptions'][$plugin_id] = Html::escape($plugin_definition['description']);
@@ -212,13 +212,13 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *   The form state object.
    */
   public function buildTextExtractorConfigForm(array &$form, FormStateInterface $form_state) {
-    $form['text_extractor_config'] = array(
+    $form['text_extractor_config'] = [
       '#type' => 'container',
-      '#attributes' => array(
+      '#attributes' => [
         'id' => 'search-api-attachments-extractor-config-form',
-      ),
+      ],
       '#tree' => TRUE,
-    );
+    ];
     $config = $this->config(static::CONFIGNAME);
     if ($form_state->getValue('extraction_method') != '') {
       // It is due to the ajax.
@@ -258,30 +258,30 @@ class TextExtractorFormSettings extends ConfigFormBase {
     if (isset($form['text_extractor_config'])) {
       $extractor_plugin_id = $form_state->getValue('extraction_method');
       $form['text_extractor_config']['test_result']['#type'] = 'details';
-      $form['text_extractor_config']['test_result']['#title'] = $this->t('Test extractor %plugin', array('%plugin' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]));
+      $form['text_extractor_config']['test_result']['#title'] = $this->t('Test extractor %plugin', ['%plugin' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]]);
       $form['text_extractor_config']['test_result']['#open'] = TRUE;
 
       $storage = $form_state->getStorage();
       if (empty($storage)) {
         // Put the initial thing into the storage.
-        $storage = array(
-          'extracted_test_text' => array(
+        $storage = [
+          'extracted_test_text' => [
             'message' => $this->t("Extraction doesn't seem to work."),
             'type' => 'error',
-          ),
-        );
+          ],
+        ];
         $form_state->setStorage($storage);
       }
-      $form['text_extractor_config']['test_result']['test_file_path_result'] = array(
+      $form['text_extractor_config']['test_result']['test_file_path_result'] = [
         '#theme' => 'saa',
         '#message' => $storage['extracted_test_text']['message'],
         '#type' => $storage['extracted_test_text']['type'],
-        '#attached' => array(
-          'library' => array(
+        '#attached' => [
+          'library' => [
             'search_api_attachments/extractor_status',
-          ),
-        ),
-      );
+          ],
+        ],
+      ];
     }
   }
 
@@ -311,7 +311,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public function getTestFile() {
     $filepath = 'public://search_api_attachments_test_extraction.pdf';
-    $values = array('uri' => $filepath);
+    $values = ['uri' => $filepath];
     $file = $this->entityTypeManager->getStorage('file')->loadByProperties($values);
     if (empty($file)) {
       // Copy the source file to public directory.
