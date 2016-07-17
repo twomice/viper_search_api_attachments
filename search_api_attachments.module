@@ -44,3 +44,17 @@ function _search_api_attachments_delete_cache(File $file) {
   $key = $collection . ':' . $file->id();
   \Drupal::keyValue($collection)->delete($key);
 }
+
+/**
+ * Implements hook_theme().
+ */
+function search_api_attachments_theme() {
+  return [
+    'saa' => [
+      'variables' => [
+        'message' => NULL,
+        'type' => NULL,
+      ],
+    ],
+  ];
+}

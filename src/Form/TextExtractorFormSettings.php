@@ -57,10 +57,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory'),
-      $container->get('plugin.manager.search_api_attachments.text_extractor'),
-      $container->get('entity_type.manager'),
-      $container->get('current_user')
+        $container->get('config.factory'), $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('entity_type.manager'), $container->get('current_user')
     );
   }
 
@@ -157,8 +154,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $extracted_data = NULL;
     try {
       $extracted_data = $extractor_plugin->extract($file);
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       $error = $e->getMessage();
     }
     $file->delete();
@@ -166,10 +162,16 @@ class TextExtractorFormSettings extends ConfigFormBase {
       if (empty($error)) {
         $error = $this->t('No error message was catched');
       }
-      $data = $this->t("Unfortunately, the extraction doesn't seem to work with this configuration! (@error)", array('@error' => $error));
+      $data = [
+        'message' => $this->t("Unfortunately, the extraction doesn't seem to work with this configuration! (@error)", array('@error' => $error)),
+        'type' => 'error',
+      ];
     }
     else {
-      $data = $this->t('Extracted data: %extracted_data', array('%extracted_data' => $extracted_data));
+      $data = [
+        'message' => $this->t('Extracted data: %extracted_data', array('%extracted_data' => $extracted_data)),
+        'type' => 'ok',
+      ];
     }
     $storage = array(
       'extracted_test_text' => $data,
@@ -263,11 +265,23 @@ class TextExtractorFormSettings extends ConfigFormBase {
       if (empty($storage)) {
         // Put the initial thing into the storage.
         $storage = array(
-          'extracted_test_text' => $this->t("Extraction doesn't seem to work."),
+          'extracted_test_text' => array(
+            'message' => $this->t("Extraction doesn't seem to work."),
+            'type' => 'error',
+          ),
         );
         $form_state->setStorage($storage);
       }
-      $form['text_extractor_config']['test_result']['test_file_path_result']['#markup'] = $storage['extracted_test_text'];
+      $form['text_extractor_config']['test_result']['test_file_path_result'] = array(
+        '#theme' => 'saa',
+        '#message' => $storage['extracted_test_text']['message'],
+        '#type' => $storage['extracted_test_text']['type'],
+        '#attached' => array(
+          'library' => array(
+            'search_api_attachments/extractor_status',
+          ),
+        ),
+      );
     }
   }
 
@@ -306,8 +320,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
       copy($source, $filepath);
       // Create the file object.
       $file = File::create(array(
-        'uri' => $filepath,
-        'uid' => $this->currentUser->id(),
+            'uri' => $filepath,
+            'uid' => $this->currentUser->id(),
       ));
       $file->save();
     }
@@ -324,7 +338,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *   The text extractor plugin manager.
    */
   protected function getTextExtractorPluginManager() {
-    return $this->textExtractorPluginManager ?: \Drupal::service('plugin.manager.search_api_attachments.text_extractor');
+    return $this->textExtractorPluginManager ? : \Drupal::service('plugin.manager.search_api_attachments.text_extractor');
   }
 
 }
