@@ -165,7 +165,7 @@ class FilesExtrator extends ProcessorPluginBase {
         // A way to load $field.
         foreach ($this->getFieldsHelper()->filterForPropertyPath($item->getFields(), NULL, $property_path) as $field) {
           if ($entity->hasField($field_name)) {
-            $filefield_values = $entity->get($field_name)->getValue();
+            $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
 
             $all_fids = [];
             foreach ($filefield_values as $filefield_value) {
