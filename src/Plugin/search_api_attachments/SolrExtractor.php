@@ -70,29 +70,9 @@ class SolrExtractor extends TextExtractorPluginBase {
     // Get the Solr backend.
     /** @var \Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend $backend */
     $backend = $server->getBackend();
-    // Initialise the Client.
-    $client = $backend->getSolrConnection();
-    // Create the Query.
-    $query = $client->createExtract();
-    // setExtractOnly is only available in solarium 3.3.0 and up.
-    $query->setExtractOnly(TRUE);
-    $query->setFile($filepath);
+    // Extract the content.
+    $xml_data = $backend->extractContentFromFile($filepath);
 
-    // Override the extract handler.
-    // @see \Solarium\QueryType\Extract\Query::setHandler().
-    if (isset($this->configuration['solr_tika_path'])) {
-      $query->setHandler($this->configuration['solr_tika_path']);
-    }
-
-    // Execute the query.
-    $result = $client->extract($query);
-    $response = $result->getResponse();
-    $json_data = $response->getBody();
-    $array_data = Json::decode($json_data);
-    // $array_data contains json array with two keys : [filename] that contains
-    // the extracted text we need and [filename]_metadata that contains some
-    // extra metadata.
-    $xml_data = $array_data[$filepath];
     // We need to get only what is in body tag.
     $xmlencoder = new XmlEncoder();
     $dom_data = $xmlencoder->decode($xml_data, 'xml');
@@ -132,16 +112,6 @@ class SolrExtractor extends TextExtractorPluginBase {
       '#required' => TRUE,
     ];
 
-    $form['solr_tika_path'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Tika path'),
-      '#description' => $this->t('Specify a custom Tika extractor handler for
-        the Solr server, e.g. update/extract, or extract/tika. When no value
-        provided, the default "update/extract" is used. When no value is
-        set, then the handler provided by Solarium is used.'),
-      '#default_value' => empty($this->configuration['solr_tika_path']) ? 'update/extract' : $this->configuration['solr_tika_path'],
-    ];
-
     return $form;
   }
 
@@ -160,7 +130,6 @@ class SolrExtractor extends TextExtractorPluginBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['solr_server'] = $form_state->getValue(array('text_extractor_config', 'solr_server'));
-    $this->configuration['solr_tika_path'] = $form_state->getValue(array('text_extractor_config', 'solr_tika_path'));
     parent::submitConfigurationForm($form, $form_state);
   }
 
