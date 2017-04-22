@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
+use Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -111,17 +112,14 @@ class SolrExtractor extends TextExtractorPluginBase {
     $form = [];
     $conditions = [
       'status' => TRUE,
-      'backend' => [
-        'search_api_solr',
-        'search_api_solr_acquia',
-        'search_api_solr_acquia_multi_subs',
-      ],
     ];
 
     $search_api_solr_servers = $this->entityTypeManager->getStorage('search_api_server')->loadByProperties($conditions);
     $options = [];
     foreach ($search_api_solr_servers as $solr_server) {
-      $options[$solr_server->id()] = $solr_server->label();
+      if ($solr_server->hasValidBackend() && $solr_server->getBackend() instanceof SearchApiSolrBackend) {
+        $options[$solr_server->id()] = $solr_server->label();
+      }
     }
 
     $form['solr_server'] = [
