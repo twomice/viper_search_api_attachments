@@ -330,7 +330,7 @@ class FilesExtrator extends ProcessorPluginBase {
     // Know if private files are allowed to be indexed.
     $private_allowed = FALSE;
     if (isset($this->configuration['excluded_private'])) {
-      $private_allowed = $this->configuration['excluded_private'];
+      $private_allowed = !(bool)$this->configuration['excluded_private'];
     }
     // Know if current file is private.
     $uri = $file->getFileUri();
