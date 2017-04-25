@@ -472,24 +472,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
    *   string of file extensions separated by a space.
    */
   public function defaultExcludedExtensions() {
-    $excluded = [
-      'aif',
-      'art',
-      'avi',
-      'bmp',
-      'gif',
-      'ico',
-      'mov',
-      'oga',
-      'ogv',
-      'png',
-      'psd',
-      'ra',
-      'ram',
-      'rgb',
-      'flv',
-    ];
-    return implode(' ', $excluded);
+    return 'aif art avi bmp gif ico mov oga ogv png psd ra ram rgb flv';
   }
 
   /**
@@ -511,9 +494,8 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
       $excluded_mimes = explode(' ', $excluded_mimes_string);
     }
     else {
-
       if (!$extensions) {
-        $extensions = $this->defaultExcludedExtensions();
+        $extensions = explode(' ', $this->defaultExcludedExtensions());
       }
       $excluded_mimes = [];
       foreach ($extensions as $extension) {
