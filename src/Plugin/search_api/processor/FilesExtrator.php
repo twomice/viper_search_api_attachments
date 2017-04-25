@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\search_api\Processor\ProcessorProperty;
 use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Provides file fields processor.
@@ -31,7 +32,7 @@ use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
  *   }
  * )
  */
-class FilesExtrator extends ProcessorPluginBase {
+class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
 
   /**
    * Name of the config being edited.
@@ -377,7 +378,6 @@ class FilesExtrator extends ProcessorPluginBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildConfigurationForm($form, $form_state);
     if (isset($this->configuration['excluded_extensions'])) {
       $default_excluded_extensions = $this->configuration['excluded_extensions'];
     }
@@ -418,10 +418,17 @@ class FilesExtrator extends ProcessorPluginBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Form validation handler.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the plugin form as built
+   *   by static::buildConfigurationForm().
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the complete form.
+   *
+   * @see \Drupal\Core\Plugin\PluginFormInterface::validateConfigurationForm()
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    parent::validateConfigurationForm($form, $form_state);
     $max_filesize = trim($form_state->getValue('max_filesize'));
     if ($max_filesize != '0') {
       $size_info = explode(' ', $max_filesize);
@@ -440,15 +447,22 @@ class FilesExtrator extends ProcessorPluginBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Form submission handler.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the plugin form as built
+   *   by static::buildConfigurationForm().
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the complete form.
+   *
+   * @see \Drupal\Core\Plugin\PluginFormInterface::submitConfigurationForm()
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    parent::submitConfigurationForm($form, $form_state);
     $excluded_extensions = $form_state->getValue('excluded_extensions');
     $excluded_extensions_array = explode(' ', $excluded_extensions);
     $excluded_mimes_array = $this->getExcludedMimes($excluded_extensions_array);
     $excluded_mimes_string = implode(' ', $excluded_mimes_array);
-    $this->setConfiguration($this->getConfiguration() + ['excluded_mimes' => $excluded_mimes_string]);
+    $this->setConfiguration($form_state->getValues() + ['excluded_mimes' => $excluded_mimes_string]);
   }
 
   /**
