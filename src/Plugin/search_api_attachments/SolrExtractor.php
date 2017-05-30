@@ -73,16 +73,21 @@ class SolrExtractor extends TextExtractorPluginBase {
     // Extract the content.
     $xml_data = $backend->extractContentFromFile($filepath);
 
-    // We need to get only what is in body tag.
-    $xmlencoder = new XmlEncoder();
-    $dom_data = $xmlencoder->decode($xml_data, 'xml');
-    $dom_data = $dom_data['body'];
+    return self::extractBody($xml_data);
+  }
 
-    $htmlencoder = new XmlEncoder();
-    $htmlencoder = $htmlencoder->encode($dom_data, 'xml');
-
-    $body = strip_tags($htmlencoder);
-    return $body;
+  /**
+   * Extract the body from XML response.
+   */
+  public static function extractBody($xml_data) {
+     if (!preg_match(',<body[^>]*>(.*)</body>,sim', $xml_data, $matches)) {
+       // If the body can't be found return just the text. This will be safe
+       // and contain any text to index.
+       return strip_tags($xml_data);
+    }
+    // Return the full content of the body. Including tags that can optionally
+    // be used for index weight.
+    return $matches[1];
   }
 
   /**
