@@ -6,17 +6,19 @@ use Drupal\Component\Utility\Bytes;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\field\Entity\FieldConfig;
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
+use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
-use Drupal\search_api\Datasource\DatasourceInterface;
+use Drupal\search_api\Processor\ProcessorProperty;
+use Drupal\search_api\Utility\FieldsHelperInterface;
 use Drupal\search_api_attachments\TextExtractorPluginInterface;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\search_api\Processor\ProcessorProperty;
-use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
@@ -95,9 +97,16 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
   protected $moduleHandler;
 
   /**
+   * Search API field helper.
+   *
+   * @var \Drupal\search_api\Utility\FieldsHelperInterface
+   */
+  protected $fieldHelper;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, MimeTypeGuesserInterface $mime_type_guesser, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, MimeTypeGuesserInterface $mime_type_guesser, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
     $this->mimeTypeGuesser = $mime_type_guesser;
@@ -105,6 +114,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
     $this->entityTypeManager = $entity_type_manager;
     $this->keyValue = $key_value;
     $this->moduleHandler = $module_handler;
+    $this->fieldHelper = $field_helper;
   }
 
   /**
@@ -112,7 +122,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('file.mime_type.guesser'), $container->get('config.factory'), $container->get('entity_type.manager'), $container->get('keyvalue'), $container->get('module_handler')
+        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('file.mime_type.guesser'), $container->get('config.factory'), $container->get('entity_type.manager'), $container->get('keyvalue'), $container->get('module_handler'), $container->get('search_api.fields_helper')
     );
   }
 
@@ -164,7 +174,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
         $property_path = static::SAA_PREFIX . $field_name;
 
         // A way to load $field.
-        foreach ($this->getFieldsHelper()->filterForPropertyPath($item->getFields(), NULL, $property_path) as $field) {
+        foreach ($this->fieldHelper->filterForPropertyPath($item->getFields(), NULL, $property_path) as $field) {
           if ($entity->hasField($field_name)) {
             $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
 
@@ -364,9 +374,9 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
         $file_elements[static::SAA_FILE_ENTITY] = $this->t('File entity');
       }
       foreach ($datasource->getPropertyDefinitions() as $property) {
-        if ($property instanceof FieldConfig) {
-          if ($property->get('field_type') == 'file') {
-            $file_elements[$property->get('field_name')] = $property->get('label');
+        if ($property instanceof FieldDefinitionInterface) {
+          if ($property->getType() == 'file') {
+            $file_elements[$property->getName()] = $property->getLabel();
           }
         }
       }
