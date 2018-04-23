@@ -6,9 +6,11 @@ use Drupal\Core\Config\Config;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
 use Drupal\search_api\Processor\ProcessorPluginManager;
+use Drupal\search_api_attachments\ExtractFileValidator;
 use Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtrator;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -69,6 +71,13 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
   protected $extractionMethod;
 
   /**
+   * The extract file validator service.
+   *
+   * @var \Drupal\search_api_attachments\ExtractFileValidator
+   */
+  protected $extractFileValidator;
+
+  /**
    * ExtractedText constructor.
    *
    * @param string $pluginId
@@ -83,13 +92,14 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    * @param \Drupal\search_api_attachments\TextExtractorPluginManager $textExtractorPluginManager
    * @param \Drupal\Core\Config\Config $config
    */
-  public function __construct($pluginId, $pluginDefinition, FieldDefinitionInterface $fieldDefinition, array $settings, $label, $viewMode, array $thirdPartySettings, ModuleHandlerInterface $moduleHandler, ProcessorPluginManager $processorPluginManager, TextExtractorPluginManager $textExtractorPluginManager, Config $config) {
+  public function __construct($pluginId, $pluginDefinition, FieldDefinitionInterface $fieldDefinition, array $settings, $label, $viewMode, array $thirdPartySettings, ModuleHandlerInterface $moduleHandler, ProcessorPluginManager $processorPluginManager, TextExtractorPluginManager $textExtractorPluginManager, Config $config, ExtractFileValidator $extractFileValidator) {
     parent::__construct($pluginId, $pluginDefinition, $fieldDefinition, $settings, $label, $viewMode, $thirdPartySettings);
 
     $this->moduleHandler = $moduleHandler;
     $this->processorPluginManager = $processorPluginManager;
     $this->textExtractorPluginManager = $textExtractorPluginManager;
     $this->config = $config;
+    $this->extractFileValidator = $extractFileValidator;
 
     $extractorPluginId = $this
       ->config
@@ -121,7 +131,8 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
       $container->get('module_handler'),
       $container->get('plugin.manager.search_api.processor'),
       $container->get('plugin.manager.search_api_attachments.text_extractor'),
-      $container->get('config.factory')->get(FilesExtrator::CONFIGNAME)
+      $container->get('config.factory')->get(FilesExtrator::CONFIGNAME),
+      $container->get('search_api_attachments.extract_file_validator')
     );
   }
 
@@ -182,7 +193,8 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
       return FALSE;
     }
     // File should have a mime type that is allowed.
-    $indexable = $indexable && !in_array($file->getMimeType(), $this->extractor->getExcludedMimes());
+    $all_excluded_mimes = $this->extractFileValidator->getExcludedMimes(NULL, $this->getSetting('excluded_extensions'));
+    $indexable = $indexable && !in_array($file->getMimeType(),$all_excluded_mimes);
     if (!$indexable) {
       return FALSE;
     }
@@ -192,12 +204,14 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
       return FALSE;
     }
     // File shouldn't exceed configured file size.
-    $indexable = $indexable && $this->extractor->isFileSizeAllowed($file);
+    $max_filesize = $this->getSetting('max_filesize');
+    $indexable = $indexable && $this->extractFileValidator->isFileSizeAllowed($file, $max_filesize);
     if (!$indexable) {
       return FALSE;
     }
     // Whether a private file can be indexed or not.
-    $indexable = $indexable && $this->extractor->isPrivateFileAllowed($file);
+    $excluded_private = $this->getSetting('excluded_private');
+    $indexable = $indexable && $this->extractFileValidator->isPrivateFileAllowed($file, $excluded_private);
     if (!$indexable) {
       return FALSE;
     }
@@ -207,6 +221,56 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
     );
     $indexable = !in_array(FALSE, $result, TRUE);
     return $indexable;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return [
+        'excluded_extensions' => ExtractFileValidator::DEFAULT_EXCLUDED_EXTENSIONS,
+        'max_filesize' => '0',
+        'excluded_private' => TRUE,
+      ] + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form['excluded_extensions'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Excluded file extensions'),
+      '#default_value' => $this->getSetting('excluded_extensions'),
+      '#size' => 80,
+      '#maxlength' => 255,
+      '#description' => $this->t('File extensions that are excluded from indexing. Separate extensions with a space and do not include the leading dot.<br />Example: "aif art avi bmp gif ico mov oga ogv png psd ra ram rgb flv"<br />Extensions are internally mapped to a MIME type, so it is not necessary to put variations that map to the same type (e.g. tif is sufficient for tif and tiff)'),
+    ];
+    $form['max_filesize'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Maximum upload size'),
+      '#default_value' => $this->getSetting('max_filesize'),
+      '#description' => $this->t('Enter a value like "10 KB", "10 MB" or "10 GB" in order to restrict the max file size of files that should be indexed.<br /> Enter "0" for no limit restriction.'),
+      '#size' => 10,
+    ];
+    $form['excluded_private'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Exclude private files'),
+      '#default_value' => $this->getSetting('excluded_private'),
+      '#description' => $this->t('Check this box if you want to exclude private files from being indexed.'),
+    ];
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = [];
+    $summary[] = t('Excluded file extensions: ' . $this->getSetting('excluded_extensions'));
+    $summary[] = t('Maximum upload size: ' . $this->getSetting('max_filesize'));
+    $summary[] = t('Exclude private files: ' . ($this->getSetting('excluded_private') ? 'true' : 'false'));
+    return $summary;
   }
 
 }

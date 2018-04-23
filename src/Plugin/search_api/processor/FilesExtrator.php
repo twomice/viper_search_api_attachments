@@ -9,6 +9,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
+use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\file\Entity\File;
 use Drupal\search_api\Datasource\DatasourceInterface;
@@ -16,11 +17,10 @@ use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
 use Drupal\search_api\Processor\ProcessorProperty;
 use Drupal\search_api\Utility\FieldsHelperInterface;
+use Drupal\search_api_attachments\ExtractFileValidator;
 use Drupal\search_api_attachments\TextExtractorPluginInterface;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
-use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Provides file fields processor.
@@ -62,11 +62,11 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
   protected $textExtractorPluginManager;
 
   /**
-   * The mime type guesser service.
+   * The extract file validator service.
    *
-   * @var \Drupal\Core\File\MimeType\MimeTypeGuesser
+   * @var \Drupal\search_api_attachments\ExtractFileValidator
    */
-  protected $mimeTypeGuesser;
+  protected $extractFileValidator;
 
   /**
    * Config factory service.
@@ -106,15 +106,15 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, MimeTypeGuesserInterface $mime_type_guesser, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper, ExtractFileValidator $extractFileValidator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
-    $this->mimeTypeGuesser = $mime_type_guesser;
     $this->configFactory = $config_factory;
     $this->entityTypeManager = $entity_type_manager;
     $this->keyValue = $key_value;
     $this->moduleHandler = $module_handler;
     $this->fieldHelper = $field_helper;
+    $this->extractFileValidator = $extractFileValidator;
   }
 
   /**
@@ -122,7 +122,16 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-        $configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('file.mime_type.guesser'), $container->get('config.factory'), $container->get('entity_type.manager'), $container->get('keyvalue'), $container->get('module_handler'), $container->get('search_api.fields_helper')
+        $configuration,
+        $plugin_id,
+        $plugin_definition,
+        $container->get('plugin.manager.search_api_attachments.text_extractor'),
+        $container->get('config.factory'),
+        $container->get('entity_type.manager'),
+        $container->get('keyvalue'),
+        $container->get('module_handler'),
+        $container->get('search_api.fields_helper'),
+        $container->get('search_api_attachments.extract_file_validator')
     );
   }
 
@@ -273,7 +282,8 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
       return FALSE;
     }
     // File should have a mime type that is allowed.
-    $indexable = $indexable && !in_array($file->getMimeType(), $this->getExcludedMimes());
+    $all_excluded_mimes = $this->extractFileValidator->getExcludedMimes(NULL, $this->configuration['excluded_mimes']);
+    $indexable = $indexable && !in_array($file->getMimeType(), $all_excluded_mimes);
     if (!$indexable) {
       return FALSE;
     }
@@ -283,12 +293,14 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
       return FALSE;
     }
     // File shouldn't exceed configured file size.
-    $indexable = $indexable && $this->isFileSizeAllowed($file);
+    $max_filesize = $this->configuration['max_filesize'];
+    $indexable = $indexable && $this->extractFileValidator->isFileSizeAllowed($file, $max_filesize);
     if (!$indexable) {
       return FALSE;
     }
     // Whether a private file can be indexed or not.
-    $indexable = $indexable && $this->isPrivateFileAllowed($file);
+    $excluded_private = $this->configuration['excluded_private'];
+    $indexable = $indexable && $this->extractFileValidator->isPrivateFileAllowed($file, $excluded_private);
     if (!$indexable) {
       return FALSE;
     }
@@ -297,65 +309,6 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
     );
     $indexable = !in_array(FALSE, $result, TRUE);
     return $indexable;
-  }
-
-  /**
-   * Exclude files that exceed configured max size.
-   *
-   * @param object $file
-   *   File object.
-   *
-   * @return bool
-   *   TRUE if the file size does not exceed configured max size.
-   */
-  public function isFileSizeAllowed($file) {
-    if (isset($this->configuration['max_filesize'])) {
-      $configured_size = $this->configuration['max_filesize'];
-      if ($configured_size == '0') {
-        return TRUE;
-      }
-      else {
-        $file_size_bytes = $file->getSize();
-        $configured_size_bytes = Bytes::toInt($configured_size);
-        if ($file_size_bytes > $configured_size_bytes) {
-          return FALSE;
-        }
-      }
-    }
-
-    return TRUE;
-  }
-
-  /**
-   * Exclude private files from being indexed.
-   *
-   * Only happens if the module is configured to do so(default behaviour).
-   *
-   * @param object $file
-   *   File object.
-   *
-   * @return bool
-   *   TRUE if we should prevent current file from being indexed.
-   */
-  public function isPrivateFileAllowed($file) {
-    // Know if private files are allowed to be indexed.
-    $private_allowed = FALSE;
-    if (isset($this->configuration['excluded_private'])) {
-      $private_allowed = !(bool)$this->configuration['excluded_private'];
-    }
-    // Know if current file is private.
-    $uri = $file->getFileUri();
-    $file_is_private = FALSE;
-    if (substr($uri, 0, 10) == 'private://') {
-      $file_is_private = TRUE;
-    }
-
-    if (!$file_is_private) {
-      return TRUE;
-    }
-    else {
-      return $private_allowed;
-    }
   }
 
   /**
@@ -392,7 +345,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
       $default_excluded_extensions = $this->configuration['excluded_extensions'];
     }
     else {
-      $default_excluded_extensions = $this->defaultExcludedExtensions();
+      $default_excluded_extensions = $this->extractFileValidator::DEFAULT_EXCLUDED_EXTENSIONS;
     }
     $form['excluded_extensions'] = [
       '#type' => 'textfield',
@@ -473,49 +426,6 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
     $excluded_mimes_array = $this->getExcludedMimes($excluded_extensions_array);
     $excluded_mimes_string = implode(' ', $excluded_mimes_array);
     $this->setConfiguration($form_state->getValues() + ['excluded_mimes' => $excluded_mimes_string]);
-  }
-
-  /**
-   * Default excluded extensions.
-   *
-   * @return string
-   *   string of file extensions separated by a space.
-   */
-  public function defaultExcludedExtensions() {
-    return 'aif art avi bmp gif ico mov oga ogv png psd ra ram rgb flv';
-  }
-
-  /**
-   * Get a corresponding array of excluded mime types.
-   *
-   * Obtained from a space separated string of file extensions.
-   *
-   * @param string $extensions
-   *   If it's not null, the return will correspond to the extensions.
-   *   If it is null,the return will correspond to the default excluded
-   *   extensions.
-   *
-   * @return array
-   *   Array or mimes.
-   */
-  public function getExcludedMimes($extensions = NULL) {
-    if (!$extensions && isset($this->configuration['excluded_mimes'])) {
-      $excluded_mimes_string = $this->configuration['excluded_mimes'];
-      $excluded_mimes = explode(' ', $excluded_mimes_string);
-    }
-    else {
-      if (!$extensions) {
-        $extensions = explode(' ', $this->defaultExcludedExtensions());
-      }
-      $excluded_mimes = [];
-      foreach ($extensions as $extension) {
-        $excluded_mimes[] = $this->mimeTypeGuesser->guess('dummy.' . $extension);
-      }
-    }
-    // Ensure we get an array of unique mime values because many extension can
-    // map the the same mime type.
-    $excluded_mimes = array_combine($excluded_mimes, $excluded_mimes);
-    return array_keys($excluded_mimes);
   }
 
 }
