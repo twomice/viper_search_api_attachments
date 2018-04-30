@@ -3,11 +3,13 @@
 namespace Drupal\search_api_attachments\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Config\Config;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\file\Entity\File;
 use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
 use Drupal\search_api\Processor\ProcessorPluginManager;
 use Drupal\search_api_attachments\ExtractFileValidator;
@@ -142,8 +144,9 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = array();
 
+    $host_entity = $items->getParent()->getValue();
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $file) {
-      if ($contents = $this->extractFileContents($file)) {
+      if ($contents = $this->extractFileContents($host_entity, $file)) {
         $elements[$delta] = array(
           '#markup' => $contents,
           '#cache' => array(
@@ -159,17 +162,21 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
   /**
    * Extracts content of given file.
    *
-   * @param $file
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity the file is attached to.
+   * @param \Drupal\file\Entity\File $file
+   *   A file object.
    *
-   * @return string|NULL
+   * @return string|null
    *   Content of the file or NULL if type of file is not supported.
    */
-  protected function extractFileContents($file) {
+  protected function extractFileContents(EntityInterface $entity, File $file) {
     if ($this->isFileIndexable($file)) {
       return $this
         ->extractor
-        ->extractOrGetFromCache($file, $this->extractionMethod);
+        ->extractOrGetFromCache($entity, $file, $this->extractionMethod);
     }
+    return NULL;
   }
 
   /**

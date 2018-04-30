@@ -4,11 +4,13 @@ namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
 use Drupal\Component\Utility\Bytes;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\file\Entity\File;
@@ -20,6 +22,8 @@ use Drupal\search_api\Utility\FieldsHelperInterface;
 use Drupal\search_api_attachments\ExtractFileValidator;
 use Drupal\search_api_attachments\TextExtractorPluginInterface;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -104,9 +108,16 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
   protected $fieldHelper;
 
   /**
+   * The logger service.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper, ExtractFileValidator $extractFileValidator) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper, ExtractFileValidator $extractFileValidator, LoggerInterface $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
     $this->configFactory = $config_factory;
@@ -115,6 +126,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
     $this->moduleHandler = $module_handler;
     $this->fieldHelper = $field_helper;
     $this->extractFileValidator = $extractFileValidator;
+    $this->logger = $logger;
   }
 
   /**
@@ -131,7 +143,8 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
         $container->get('keyvalue'),
         $container->get('module_handler'),
         $container->get('search_api.fields_helper'),
-        $container->get('search_api_attachments.extract_file_validator')
+        $container->get('search_api_attachments.extract_file_validator'),
+        $container->get('logger.channel.search_api_attachments')
     );
   }
 
@@ -202,7 +215,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
 
             foreach ($files as $file) {
               if ($this->isFileIndexable($file, $item, $field_name)) {
-                $extraction .= $this->extractOrGetFromCache($file, $extractor_plugin);
+                $extraction .= $this->extractOrGetFromCache($entity, $file, $extractor_plugin);
               }
             }
             $field->addValue($extraction);
@@ -215,6 +228,8 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
   /**
    * Extract file data or get it from cache if available and cache it.
    *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity the file is attached to.
    * @param \Drupal\file\Entity\File $file
    *   A file object.
    * @param \Drupal\search_api_attachments\TextExtractorPluginInterface $extractor_plugin
@@ -223,14 +238,31 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
    * @return string
    *   $extracted_data
    */
-  public function extractOrGetFromCache(File $file, TextExtractorPluginInterface $extractor_plugin) {
+  public function extractOrGetFromCache(EntityInterface $entity, File $file, TextExtractorPluginInterface $extractor_plugin) {
     $collection = 'search_api_attachments';
     $key = $collection . ':' . $file->id();
+    $extracted_data = '';
     if ($cache = $this->keyValue->get($collection)->get($key)) {
       $extracted_data = $cache;
     }
     else {
-      $extracted_data = $extractor_plugin->extract($file);
+      try {
+        $extracted_data = $extractor_plugin->extract($file);
+      }
+      catch (\Exception $e) {
+        $error = Error::decodeException($e);
+        $message_params = [
+          '@file_id' => $file->id(),
+          '@entity_id' => $entity->id(),
+          '@entity_type' => $entity->getEntityTypeId(),
+          '@type' => $error['%type'],
+          '@message' => $error['@message'],
+          '@function' => $error['%function'],
+          '@line' => $error['%line'],
+          '@file' => $error['%file'],
+        ];
+        $this->logger->log(LogLevel::ERROR, 'Error extracting text from file @file_id for @entity_type @entity_id. @type: @message in @function (line @line of @file).', $message_params);
+      }
       $this->keyValue->get($collection)->set($key, $extracted_data);
     }
     return $extracted_data;

@@ -5,3 +5,6 @@ services:
   search_api_attachments.extract_file_validator:
     class: Drupal\search_api_attachments\ExtractFileValidator
     arguments: ['@file.mime_type.guesser']
+  logger.channel.search_api_attachments:
+    parent: logger.channel_base
+    arguments: ['search_api_attachments']
