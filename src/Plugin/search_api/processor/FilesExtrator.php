@@ -455,7 +455,7 @@ class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $excluded_extensions = $form_state->getValue('excluded_extensions');
     $excluded_extensions_array = explode(' ', $excluded_extensions);
-    $excluded_mimes_array = $this->getExcludedMimes($excluded_extensions_array);
+    $excluded_mimes_array = $this->extractFileValidator->getExcludedMimes($excluded_extensions_array);
     $excluded_mimes_string = implode(' ', $excluded_mimes_array);
     $this->setConfiguration($form_state->getValues() + ['excluded_mimes' => $excluded_mimes_string]);
   }
