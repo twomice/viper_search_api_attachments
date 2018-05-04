@@ -3,7 +3,6 @@
 namespace Drupal\search_api_attachments\Form;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -36,20 +35,12 @@ class TextExtractorFormSettings extends ConfigFormBase {
   protected $entityTypeManager;
 
   /**
-   * Current user.
-   *
-   * @var \Drupal\Core\Session\AccountProxyInterface
-   */
-  protected $currentUser;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TextExtractorPluginManager $text_extractor_plugin_manager, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user) {
+  public function __construct(ConfigFactoryInterface $config_factory, TextExtractorPluginManager $text_extractor_plugin_manager, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($config_factory);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
     $this->entityTypeManager = $entity_type_manager;
-    $this->currentUser = $current_user;
   }
 
   /**
@@ -57,7 +48,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-        $container->get('config.factory'), $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('entity_type.manager'), $container->get('current_user')
+        $container->get('config.factory'), $container->get('plugin.manager.search_api_attachments.text_extractor'), $container->get('entity_type.manager')
     );
   }
 
@@ -321,7 +312,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
       // Create the file object.
       $file = File::create(array(
             'uri' => $filepath,
-            'uid' => $this->currentUser->id(),
+            'uid' => $this->currentUser()->id(),
       ));
       $file->save();
     }
