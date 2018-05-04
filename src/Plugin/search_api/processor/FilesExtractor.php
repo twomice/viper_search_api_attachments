@@ -38,7 +38,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class FilesExtrator extends ProcessorPluginBase implements PluginFormInterface {
+class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface {
 
   /**
    * Name of the config being edited.

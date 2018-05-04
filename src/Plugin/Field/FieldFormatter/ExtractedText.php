@@ -13,7 +13,7 @@ use Drupal\file\Entity\File;
 use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
 use Drupal\search_api\Processor\ProcessorPluginManager;
 use Drupal\search_api_attachments\ExtractFileValidator;
-use Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtrator;
+use Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtractor;
 use Drupal\search_api_attachments\TextExtractorPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -61,7 +61,7 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
   /**
    * FilesExtractor processor plugin.
    *
-   * @var \Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtrator
+   * @var \Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtractor
    */
   protected $extractor;
 
@@ -133,7 +133,7 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
       $container->get('module_handler'),
       $container->get('plugin.manager.search_api.processor'),
       $container->get('plugin.manager.search_api_attachments.text_extractor'),
-      $container->get('config.factory')->get(FilesExtrator::CONFIGNAME),
+      $container->get('config.factory')->get(FilesExtractor::CONFIGNAME),
       $container->get('search_api_attachments.extract_file_validator')
     );
   }
@@ -190,7 +190,7 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    */
   protected function isFileIndexable($file) {
     // This method is a copy of
-    // Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtrator::isFileIndexable()
+    // Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtractor::isFileIndexable()
     // and differs mostly in the signature. Unfortunately it can't be used here
     // as it requires second argument of type \Drupal\search_api\Item\ItemInterface.
 
