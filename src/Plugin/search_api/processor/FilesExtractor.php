@@ -226,7 +226,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
   }
 
   /**
-   * Extract file data or get it from cache if available and cache it.
+   * Extract non text file data or get it from cache if available and cache it.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity the file is attached to.
