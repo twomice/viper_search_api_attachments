@@ -377,7 +377,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
       $default_excluded_extensions = $this->configuration['excluded_extensions'];
     }
     else {
-      $default_excluded_extensions = $this->extractFileValidator::DEFAULT_EXCLUDED_EXTENSIONS;
+      $default_excluded_extensions = ExtractFileValidator::DEFAULT_EXCLUDED_EXTENSIONS;
     }
     $form['excluded_extensions'] = [
       '#type' => 'textfield',
