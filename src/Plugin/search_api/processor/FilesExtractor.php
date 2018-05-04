@@ -239,6 +239,10 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    *   $extracted_data
    */
   public function extractOrGetFromCache(EntityInterface $entity, File $file, TextExtractorPluginInterface $extractor_plugin) {
+    // Directly process plaintext files.
+    if (substr($file->getMimeType(), 0, 5) == 'text/') {
+      return file_get_contents($file->getFileUri());
+    }
     $collection = 'search_api_attachments';
     $key = $collection . ':' . $file->id();
     $extracted_data = '';
