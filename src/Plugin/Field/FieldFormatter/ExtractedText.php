@@ -200,7 +200,8 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
       return FALSE;
     }
     // File should have a mime type that is allowed.
-    $all_excluded_mimes = $this->extractFileValidator->getExcludedMimes(NULL, $this->getSetting('excluded_extensions'));
+    $excluded_extensions_array = explode(' ', $this->getSetting('excluded_extensions'));
+    $all_excluded_mimes = $this->extractFileValidator->getExcludedMimes($excluded_extensions_array);
     $indexable = $indexable && !in_array($file->getMimeType(),$all_excluded_mimes);
     if (!$indexable) {
       return FALSE;
