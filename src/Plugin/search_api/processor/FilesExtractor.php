@@ -175,7 +175,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    */
   public function addFieldValues(ItemInterface $item) {
     $files = [];
-    $config = $this->configFactory->getEditable(static::CONFIGNAME);
+    $config = $this->configFactory->get(static::CONFIGNAME);
     $extractor_plugin_id = $config->get('extraction_method');
     if ($extractor_plugin_id != '') {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
