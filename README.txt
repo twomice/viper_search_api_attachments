@@ -28,7 +28,7 @@ heading below.
 
 EXTRACTION CONFIGURATION (Tika)
 -------------------------------
-On Ubuntu 14.04
+On Ubuntu 18.04
 
 Install java
 > sudo apt-get install openjdk-7-jdk
