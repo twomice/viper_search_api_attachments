@@ -70,6 +70,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildForm($form, $form_state);
+
     $config = $this->config(static::CONFIGNAME);
     $form['extraction_method'] = [
       '#type' => 'select',
@@ -99,10 +101,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
       '#default_value' => $config->get('preserve_cache'),
       '#description' => $this->t('When checked, <a href=":url">clearing the sitewide cache</a> will not clear the cache of extracted files.', [':url' => $url]),
     ];
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit and test extraction'),
-    ];
+    $form['actions']['submit']['#value'] = $this->t('Submit and test extraction');
     return $form;
   }
 
@@ -231,6 +230,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     else {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
+      $form['text_extractor_config']['#title'] = $this->t('@extractor_plugin_label configuration', ['@extractor_plugin_label' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]]);
       $text_extractor_form = $extractor_plugin->buildConfigurationForm(array(), $form_state);
 
       $form['text_extractor_config'] += $text_extractor_form;
