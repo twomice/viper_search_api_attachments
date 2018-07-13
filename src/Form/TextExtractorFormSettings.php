@@ -133,9 +133,11 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $extractor_plugin->submitConfigurationForm($form, $form_state);
     }
 
-    // Set the extraction method variable.
     $config = $this->configFactory()->getEditable(static::CONFIGNAME);
+    // Set the extraction method variable.
     $config->set('extraction_method', $extractor_plugin_id);
+    // Set the preserving cache option
+    $config->set('preserve_cache', $form_state->getValue('preserve_cache'));
     $config->save();
 
     // Test the extraction.
