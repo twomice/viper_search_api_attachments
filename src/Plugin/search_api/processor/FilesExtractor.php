@@ -252,6 +252,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
     else {
       try {
         $extracted_data = $extractor_plugin->extract($file);
+        $extracted_data = $this->limitBytes($extracted_data);
       }
       catch (\Exception $e) {
         $error = Error::decodeException($e);
@@ -296,6 +297,31 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
     else {
       return $all_fids;
     }
+  }
+
+
+  /**
+   * Limit the indexed text to first N bytes.
+   *
+   * @param string $extracted_text
+   *  The hole extracted text
+   *
+   * @return string
+   *   The first N bytes of the extracted text that will be indexed and cached.
+   */
+  public function limitBytes($extracted_text) {
+    $bytes = 0;
+    if (isset($this->configuration['number_first_bytes'])) {
+      $bytes = $this->configuration['number_first_bytes'];
+    }
+    // If $bytes is 0 return all items.
+    if ($bytes == 0) {
+      return $extracted_text;
+    }
+    else {
+      $extracted_text = mb_strcut($extracted_text, 0, $bytes);
+    }
+    return $extracted_text;
   }
 
   /**
@@ -399,6 +425,15 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
       '#min' => 0,
       '#max' => 99999,
       '#description' => $this->t('The number of files to index per file field.<br />The order of indexation is the weight in the widget.<br /> 0 for no restriction.'),
+    ];
+    $form['number_first_bytes'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Number of first N bytes to index in the extracted string'),
+      '#default_value' => isset($this->configuration['number_first_bytes']) ? $this->configuration['number_first_bytes'] : '0',
+      '#size' => 5,
+      '#min' => 0,
+      '#max' => 99999,
+      '#description' => $this->t('The number first bytes to index in the extracted string.<br /> 0 to index the full extracted content without bytes limitation.'),
     ];
     $form['max_filesize'] = [
       '#type' => 'textfield',
