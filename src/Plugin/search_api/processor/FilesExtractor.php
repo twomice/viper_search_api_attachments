@@ -14,6 +14,7 @@ use Drupal\Core\Utility\Error;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\file\Entity\File;
+use Drupal\media\Entity\Media;
 use Drupal\search_api\Datasource\DatasourceInterface;
 use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\ProcessorPluginBase;
@@ -197,13 +198,35 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
 
         // A way to load $field.
         foreach ($this->fieldHelper->filterForPropertyPath($item->getFields(), NULL, $property_path) as $field) {
+          $all_fids = [];
           if ($entity->hasField($field_name)) {
-            $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
-
-            $all_fids = [];
-            foreach ($filefield_values as $filefield_value) {
-              $all_fids[] = $filefield_value['target_id'];
+            // Get type to manage media entity reference case.
+            $type = $entity->get($field_name)->getFieldDefinition()->getType();
+            if ($type == 'entity_reference') {
+              $field_def = $entity->get($field_name)->getFieldDefinition();
+              if ($field_def instanceof FieldConfig) {
+                $deps = $field_def->getDependencies();
+                if (in_array('media.type.file', $deps['config'])) {
+                  // This is a media field.
+                  $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
+                  foreach ($filefield_values as $media_value) {
+                    $media = Media::load($media_value['target_id']);
+                    // Supporting only the default media file field for now.
+                    $mediafilefield_values = $media->field_media_file->getValue();
+                    foreach ($mediafilefield_values as $filefield_value) {
+                      $all_fids[] = $filefield_value['target_id'];
+                    }
+                  }
+                }
+              }
             }
+            elseif ($type == "file") {
+              $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
+              foreach ($filefield_values as $filefield_value) {
+                $all_fids[] = $filefield_value['target_id'];
+              }
+            }
+
             $fids = $this->limitToAllowedNumber($all_fids);
             // Retrieve the files.
             $files = $this->entityTypeManager
@@ -392,6 +415,14 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
         if ($property instanceof FieldDefinitionInterface) {
           if ($property->getType() == 'file') {
             $file_elements[$property->getName()] = $property->getLabel();
+          }
+          if ($property->getType() == "entity_reference") {
+            if ($property instanceof FieldConfig) {
+              $deps = $property->getDependencies();
+              if (in_array('media.type.file', $deps['config'])) {
+                $file_elements[$property->getName()] = $property->getLabel();
+              }
+            }
           }
         }
       }
