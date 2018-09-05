@@ -212,9 +212,11 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
                   foreach ($filefield_values as $media_value) {
                     $media = Media::load($media_value['target_id']);
                     // Supporting only the default media file field for now.
-                    $mediafilefield_values = $media->field_media_file->getValue();
-                    foreach ($mediafilefield_values as $filefield_value) {
-                      $all_fids[] = $filefield_value['target_id'];
+                    if ($media->bundle() == 'file') {
+                      $mediafilefield_values = $media->field_media_file->getValue();
+                      foreach ($mediafilefield_values as $filefield_value) {
+                        $all_fids[] = $filefield_value['target_id'];
+                      }
                     }
                   }
                 }
