@@ -6,6 +6,7 @@ among:
  - the build in Solr extractor
  - the Pdftotext command line tool
  - the python Pdf2txt extractor
+ - the docconv extractor
 and index it.
 Search API attachments will index many file formats.
 
