@@ -71,8 +71,11 @@ Install Pdf2txt as described in https://github.com/euske/pdfminer
 or try
 > sudo apt-get install python-pdfminer
 
-EXTRACTION CONFIGURATION (python docconv)
+EXTRACTION CONFIGURATION (go docconv)
 -----------------------------------------
+Install golang or make sure you already have it
+get docconv (https://github.com/sajari/docconv)
+Install docconv as described in https://github.com/sajari/docconv
 
 
 SIMPLE USAGE EXAMPLE
