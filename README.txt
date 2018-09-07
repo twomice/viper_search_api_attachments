@@ -65,8 +65,15 @@ EXTRACTION CONFIGURATION (python Pdf2txt)
 -----------------------------------------
 On Debian 8
 
-Install Pdf2txt (tested with package version 20110515+dfsg-1 and python 2.7.9)
+Install python or make sure you already have it
+Get Pdf2txt (https://github.com/euske/pdfminer)
+Install Pdf2txt as described in https://github.com/euske/pdfminer
+or try
 > sudo apt-get install python-pdfminer
+
+EXTRACTION CONFIGURATION (python docconv)
+-----------------------------------------
+
 
 SIMPLE USAGE EXAMPLE
 --------------------
