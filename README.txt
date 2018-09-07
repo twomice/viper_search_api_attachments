@@ -78,10 +78,10 @@ get docconv (https://github.com/sajari/docconv)
 Install docconv as described in https://github.com/sajari/docconv
 
 
-SIMPLE USAGE EXAMPLE
---------------------
+SIMPLE USAGE EXAMPLE (File fields content (file entities))
+----------------------------------------------------------
 0) This is tested with :
-   drupal 8.5.x
+   drupal 8.6.x
    search_api 8.x-1.x
    search_api_attachments 8.x-1.x
 
@@ -90,7 +90,7 @@ SIMPLE USAGE EXAMPLE
 2) Go to admin/structure/types/manage/article/fields/add-field and add a
    file field 'My pdfs' (field_my_pdfs).
 
-3) Go to node/add/article and add a node with a pdf.
+3) Go to node/add/article and add an article node with a pdf.
 
 4) Go to admin/config/search/search_api_attachments and configure the
    Tika extractor.
@@ -111,6 +111,61 @@ SIMPLE USAGE EXAMPLE
 
 9) Go to /admin/config/search/search-api/index/my_index/fields to configure
    "Search api attachments: My pdfs" and "Title" to Fulltext.
+
+10) Go to admin/structure/views/add and add a Page view:
+    - View name: SAA
+    - View settings:Show: Index My index
+    - Page settings: Check Create a page with title and path 'saa' that
+      displays "Rendered entity" format.
+    ("Search results" format seems not working for now)
+
+11) Add a filter to the view: the 'Fulltext search' with
+    - Operator : Contains any of these words
+    - Check the Expose checkbox
+
+12) Go to admin/structure/views/view/saa and in the "Exposed Form" section (in
+       the ADVANCED section), hit the 'Basic' link and choose 'Input required'
+       so that the view doesn't display any default results.
+
+13) Go to admin/config/search/search-api/index/my_index and Index items.
+
+14) Go to /saa and search for any term in the title, body or in the pdf file :)
+
+
+
+SIMPLE USAGE EXAMPLE (media fields content (media entities of type File))
+-------------------------------------------------------------------------
+0) This is tested with :
+   drupal 8.6.x
+   search_api 8.x-1.x
+   search_api_attachments 8.x-1.x
+
+1) Install drupal, media, search_api search_api_db and search_api_attachments.
+
+2) Go to admin/structure/types/manage/article/fields/add-field and add a
+   file field 'My medias' (field_my_medias). (choose File in the Media type settings)
+
+3 ) Go to media/add/file and add a media with a pdf file
+
+4) Go to node/add/article and add an article node that references the media entity created at step 3
+
+5) Configure the extractor at admin/config/search/search_api_attachments and Go
+   to admin/config/search/search-api/add-server and add server 'My server'
+   (my_server) with the default Database Backend.
+
+6) Go to admin/config/search/search-api/add-index and add a new index 'My index'
+   (my_index) with 'Content' as Data source and 'My server' as Server.
+
+7) Go to admin/config/search/search-api/index/my_index/processors and enable
+   the File attachments processor.
+
+8) Go to admin/config/search/search-api/index/my_index/fields/add and:
+   - in the General section, add the "Search api attachments: My medias" field.
+   - in the Content section, add the "Title".
+   - in the Content section, add the "Body".
+
+9) Go to /admin/config/search/search-api/index/my_index/fields to configure
+   "Search api attachments: My medias" and "Title" to Fulltext.
 
 10) Go to admin/structure/views/add and add a Page view:
     - View name: SAA
