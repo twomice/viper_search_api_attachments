@@ -12,8 +12,8 @@ Search API attachments will index many file formats.
 
 REQUIREMENTS
 ------------
-Requires the ability to run java on your server and an installation of the
-Apache Tika library if you don't want to use the Solr build in extractor.
+Depending on the extracting method you want to use, you may need java on your
+server or python or ...
 
 MODULE INSTALLATION
 -------------------
