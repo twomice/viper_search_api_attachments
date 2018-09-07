@@ -12,6 +12,7 @@ Search API attachments will index many file formats.
 
 REQUIREMENTS
 ------------
+This module needs search_api module to be enabled on your site.
 Depending on the extracting method you want to use, you may need java on your
 server or python or ...
 
