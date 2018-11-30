@@ -456,7 +456,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
       '#default_value' => isset($this->configuration['number_indexed']) ? $this->configuration['number_indexed'] : '0',
       '#size' => 5,
       '#min' => 0,
-      '#max' => 99999,
+      '#max' => 999999,
       '#description' => $this->t('The number of files to index per file field.<br />The order of indexation is the weight in the widget.<br /> 0 for no restriction.'),
     ];
     $form['number_first_bytes'] = [
