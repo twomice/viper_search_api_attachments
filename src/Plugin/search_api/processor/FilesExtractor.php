@@ -496,43 +496,46 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    * @see \Drupal\Core\Plugin\PluginFormInterface::validateConfigurationForm()
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    // Validate 'number_first_bytes'
+    $number_first_bytes = trim($form_state->getValue('number_first_bytes'));
+    $error = $this->validateSize($number_first_bytes);
+    if ($error) {
+      $form_state->setError($form['number_first_bytes'], $this->t('The size limit option must contain a valid value. You may either enter "0" (for no restriction) or a string like "10 KB", "10 MB" or "10 GB".'));
+    }
 
-	  $number_first_bytes = trim($form_state->getValue('number_first_bytes'));
-	  if ($number_first_bytes != '0') {
-
-      $size_info = explode(' ', $number_first_bytes);
-      if (count($size_info) == 1) {
-        $error = !is_int((int) $size_info[0]);
-      }
-      else if (count($size_info) != 2) {
-        $error = TRUE;
-      }
-      else {
-        $starts_integer = is_int((int) $size_info[0]);
-        $unit_expected = in_array($size_info[1], ['KB', 'MB', 'GB']);
-        $error = !$starts_integer || !$unit_expected;
-      }
-      if ($error) {
-        $form_state->setErrorByName('number_first_bytes', $this->t('The size limit option must contain a valid value. You may either enter "0" (for no restriction) or a string like "1000", "10 KB, "10 MB" or "10 GB".'));
-      }
-
-	  }
-
+    // Validate 'max_filesize'
     $max_filesize = trim($form_state->getValue('max_filesize'));
-    if ($max_filesize != '0') {
-      $size_info = explode(' ', $max_filesize);
-      if (count($size_info) != 2) {
+    $error = $this->validateSize($max_filesize);
+    if ($error) {
+      $form_state->setError($form['max_filesize'], $this->t('The max filesize option must contain a valid value. You may either enter "0" (for no restriction) or a string like "10 KB", "10 MB" or "10 GB".'));
+    }
+  }
+
+  /**
+   * Helper method to validate the size of files' format.
+   * @param string $bytes
+   * @return boolean
+   * TRUE if the $bites is of form "N KB", "N MB" or "N GB" where N is integer.
+   */
+  public function validateSize($bytes) {
+    $error = FALSE;
+    if ($bytes != '0') {
+
+      $size_info = explode(' ', $bytes);
+      // The only case we can have count($size_info) == 1 is for '0' value.
+      if (count($size_info) == 1) {
+        $error = $size_info[0] != '0';
+      }
+      elseif (count($size_info) != 2) {
         $error = TRUE;
       }
       else {
         $starts_integer = is_int((int) $size_info[0]);
         $unit_expected = in_array($size_info[1], ['KB', 'MB', 'GB']);
         $error = !$starts_integer || !$unit_expected;
-      }
-      if ($error) {
-        $form_state->setErrorByName('max_filesize', $this->t('The max filesize option must contain a valid value. You may either enter "0" (for no restriction) or a string like "10 KB, "10 MB" or "10 GB".'));
       }
     }
+    return $error;
   }
 
   /**
