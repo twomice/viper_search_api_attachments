@@ -337,7 +337,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
   public function limitBytes($extracted_text) {
     $bytes = 0;
     if (isset($this->configuration['number_first_bytes'])) {
-      $bytes = $this->configuration['number_first_bytes'];
+      $bytes = Bytes::toInt($this->configuration['number_first_bytes']);
     }
     // If $bytes is 0 return all items.
     if ($bytes == 0) {
@@ -460,13 +460,13 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
       '#description' => $this->t('The number of files to index per file field.<br />The order of indexation is the weight in the widget.<br /> 0 for no restriction.'),
     ];
     $form['number_first_bytes'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Number of first N bytes to index in the extracted string'),
+      '#type' => 'textfield',
+      '#title' => $this->t('Limit size of the extracted string before indexing.'),
       '#default_value' => isset($this->configuration['number_first_bytes']) ? $this->configuration['number_first_bytes'] : '0',
       '#size' => 5,
       '#min' => 0,
       '#max' => 99999,
-      '#description' => $this->t('The number first bytes to index in the extracted string.<br /> 0 to index the full extracted content without bytes limitation.'),
+      '#description' => $this->t('Enter a value like "1000", "10 KB", "10 MB" or "10 GB" in order to restrict the size of the content after extraction.<br /> 0 to index the full extracted content without bytes limitation.'),
     ];
     $form['max_filesize'] = [
       '#type' => 'textfield',
@@ -496,6 +496,28 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    * @see \Drupal\Core\Plugin\PluginFormInterface::validateConfigurationForm()
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+
+	  $number_first_bytes = trim($form_state->getValue('number_first_bytes'));
+	  if ($number_first_bytes != '0') {
+
+      $size_info = explode(' ', $number_first_bytes);
+      if (count($size_info) == 1) {
+        $error = !is_int((int) $size_info[0]);
+      }
+      else if (count($size_info) != 2) {
+        $error = TRUE;
+      }
+      else {
+        $starts_integer = is_int((int) $size_info[0]);
+        $unit_expected = in_array($size_info[1], ['KB', 'MB', 'GB']);
+        $error = !$starts_integer || !$unit_expected;
+      }
+      if ($error) {
+        $form_state->setErrorByName('number_first_bytes', $this->t('The size limit option must contain a valid value. You may either enter "0" (for no restriction) or a string like "1000", "10 KB, "10 MB" or "10 GB".'));
+      }
+
+	  }
+
     $max_filesize = trim($form_state->getValue('max_filesize'));
     if ($max_filesize != '0') {
       $size_info = explode(' ', $max_filesize);
