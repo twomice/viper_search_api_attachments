@@ -514,9 +514,10 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    * Helper method to validate the size of files' format.
    *
    * @param string $bytes
+   *   Number of bytes.
    *
    * @return bool
-   *   TRUE if the $bites is of form "N KB", "N MB" or "N GB" where N is integer.
+   *   TRUE if $bites is of form "N KB", "N MB" or "N GB" where N is integer.
    */
   public function validateSize($bytes) {
     $error = FALSE;

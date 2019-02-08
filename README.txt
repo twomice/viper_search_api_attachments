@@ -143,11 +143,13 @@ SIMPLE USAGE EXAMPLE (media fields content (media entities of type File))
 1) Install drupal, media, search_api search_api_db and search_api_attachments.
 
 2) Go to admin/structure/types/manage/article/fields/add-field and add a
-   file field 'My medias' (field_my_medias). (choose File in the Media type settings)
+   file field 'My medias' (field_my_medias).
+   (choose File in the Media type settings)
 
 3 ) Go to media/add/file and add a media with a pdf file
 
-4) Go to node/add/article and add an article node that references the media entity created at step 3
+4) Go to node/add/article and add an article node that references the media
+   entity created at step 3
 
 5) Configure the extractor at admin/config/search/search_api_attachments and Go
    to admin/config/search/search-api/add-server and add server 'My server'

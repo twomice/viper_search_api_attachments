@@ -83,16 +83,29 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    * ExtractedText constructor.
    *
    * @param string $pluginId
+   *   The plugin id.
    * @param mixed $pluginDefinition
+   *   The plugin definition.
    * @param \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition
+   *   The field definitions.
    * @param array $settings
+   *   The settings.
    * @param string $label
+   *   The label.
    * @param string $viewMode
+   *   The view mode.
    * @param array $thirdPartySettings
+   *   The third party settings.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
    * @param \Drupal\search_api\Processor\ProcessorPluginManager $processorPluginManager
+   *   The processor plugin manager.
    * @param \Drupal\search_api_attachments\TextExtractorPluginManager $textExtractorPluginManager
+   *   The text extractor plugin manager.
    * @param \Drupal\Core\Config\Config $config
+   *   The configuration.
+   * @param \Drupal\search_api_attachments\ExtractFileValidator $extractFileValidator
+   *   The extract file validator.
    */
   public function __construct($pluginId, $pluginDefinition, FieldDefinitionInterface $fieldDefinition, array $settings, $label, $viewMode, array $thirdPartySettings, ModuleHandlerInterface $moduleHandler, ProcessorPluginManager $processorPluginManager, TextExtractorPluginManager $textExtractorPluginManager, Config $config, ExtractFileValidator $extractFileValidator) {
     parent::__construct($pluginId, $pluginDefinition, $fieldDefinition, $settings, $label, $viewMode, $thirdPartySettings);
@@ -192,7 +205,8 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
     // This method is a copy of
     // Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtractor::isFileIndexable()
     // and differs mostly in the signature. Unfortunately it can't be used here
-    // as it requires second argument of type \Drupal\search_api\Item\ItemInterface.
+    // as it requires second argument of type
+    // \Drupal\search_api\Item\ItemInterface.
     // File should exist in disc.
     $indexable = file_exists($file->getFileUri());
     if (!$indexable) {
@@ -274,9 +288,10 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    */
   public function settingsSummary() {
     $summary = [];
-    $summary[] = t('Excluded file extensions: ' . $this->getSetting('excluded_extensions'));
-    $summary[] = t('Maximum upload size: ' . $this->getSetting('max_filesize'));
-    $summary[] = t('Exclude private files: ' . ($this->getSetting('excluded_private') ? 'true' : 'false'));
+    $summary[] = t('Excluded file extensions: @extensions', ['@extensions' => $this->getSetting('excluded_extensions')]);
+    $summary[] = t('Maximum upload size: @maxsize', ['@maxsize' => $this->getSetting('max_filesize')]);
+    $isexcluded = $this->getSetting('excluded_private') ? 'true' : 'false';
+    $summary[] = t('Exclude private files: @isexcluded', ['@isexcluded' => $isexcluded]);
     return $summary;
   }
 

@@ -23,7 +23,9 @@ class TextExtractorFormSettings extends ConfigFormBase {
   const CONFIGNAME = 'search_api_attachments.admin_config';
 
   /**
-   * Drupal\search_api_attachments\TextExtractorPluginManager service.
+   * Text extractor plugin Manager.
+   *
+   * @var Drupal\search_api_attachments\TextExtractorPluginManagerservice
    */
   private $textExtractorPluginManager;
 
@@ -332,7 +334,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *   The text extractor plugin manager.
    */
   protected function getTextExtractorPluginManager() {
-    return $this->textExtractorPluginManager ? : \Drupal::service('plugin.manager.search_api_attachments.text_extractor');
+    return $this->textExtractorPluginManager ?: \Drupal::service('plugin.manager.search_api_attachments.text_extractor');
   }
 
 }
