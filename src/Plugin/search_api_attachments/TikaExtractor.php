@@ -110,7 +110,7 @@ class TikaExtractor extends TextExtractorPluginBase {
           $form_state->setError($form['text_extractor_config']['tika_path'], $this->t('Tika could not be reached and executed.'));
         }
         else {
-          drupal_set_message(t('Tika can be reached and be executed'));
+          $this->getMessenger()->addStatus(t('Tika can be reached and be executed'));
         }
       }
     }
