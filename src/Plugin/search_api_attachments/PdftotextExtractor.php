@@ -51,7 +51,7 @@ class PdftotextExtractor extends TextExtractorPluginBase {
     }
   }
 
-/**
+  /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {

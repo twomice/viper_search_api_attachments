@@ -232,8 +232,8 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
             $fids = $this->limitToAllowedNumber($all_fids);
             // Retrieve the files.
             $files = $this->entityTypeManager
-                ->getStorage('file')
-                ->loadMultiple($fids);
+              ->getStorage('file')
+              ->loadMultiple($fids);
           }
           if (!empty($files)) {
             $extraction = '';
@@ -324,12 +324,11 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
     }
   }
 
-
   /**
    * Limit the indexed text to first N bytes.
    *
    * @param string $extracted_text
-   *  The hole extracted text
+   *   The hole extracted text.
    *
    * @return string
    *   The first N bytes of the extracted text that will be indexed and cached.
@@ -496,14 +495,14 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    * @see \Drupal\Core\Plugin\PluginFormInterface::validateConfigurationForm()
    */
   public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    // Validate 'number_first_bytes'
+    // Validate 'number_first_bytes'.
     $number_first_bytes = trim($form_state->getValue('number_first_bytes'));
     $error = $this->validateSize($number_first_bytes);
     if ($error) {
       $form_state->setError($form['number_first_bytes'], $this->t('The size limit option must contain a valid value. You may either enter "0" (for no restriction) or a string like "10 KB", "10 MB" or "10 GB".'));
     }
 
-    // Validate 'max_filesize'
+    // Validate 'max_filesize'.
     $max_filesize = trim($form_state->getValue('max_filesize'));
     $error = $this->validateSize($max_filesize);
     if ($error) {
@@ -513,9 +512,11 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
 
   /**
    * Helper method to validate the size of files' format.
+   *
    * @param string $bytes
-   * @return boolean
-   * TRUE if the $bites is of form "N KB", "N MB" or "N GB" where N is integer.
+   *
+   * @return bool
+   *   TRUE if the $bites is of form "N KB", "N MB" or "N GB" where N is integer.
    */
   public function validateSize($bytes) {
     $error = FALSE;

@@ -193,7 +193,6 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
     // Drupal\search_api_attachments\Plugin\search_api\processor\FilesExtractor::isFileIndexable()
     // and differs mostly in the signature. Unfortunately it can't be used here
     // as it requires second argument of type \Drupal\search_api\Item\ItemInterface.
-
     // File should exist in disc.
     $indexable = file_exists($file->getFileUri());
     if (!$indexable) {
@@ -202,7 +201,7 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
     // File should have a mime type that is allowed.
     $excluded_extensions_array = explode(' ', $this->getSetting('excluded_extensions'));
     $all_excluded_mimes = $this->extractFileValidator->getExcludedMimes($excluded_extensions_array);
-    $indexable = $indexable && !in_array($file->getMimeType(),$all_excluded_mimes);
+    $indexable = $indexable && !in_array($file->getMimeType(), $all_excluded_mimes);
     if (!$indexable) {
       return FALSE;
     }
@@ -236,10 +235,10 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    */
   public static function defaultSettings() {
     return [
-        'excluded_extensions' => ExtractFileValidator::DEFAULT_EXCLUDED_EXTENSIONS,
-        'max_filesize' => '0',
-        'excluded_private' => TRUE,
-      ] + parent::defaultSettings();
+      'excluded_extensions' => ExtractFileValidator::DEFAULT_EXCLUDED_EXTENSIONS,
+      'max_filesize' => '0',
+      'excluded_private' => TRUE,
+    ] + parent::defaultSettings();
   }
 
   /**

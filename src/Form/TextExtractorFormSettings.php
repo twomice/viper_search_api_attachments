@@ -136,7 +136,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $config = $this->configFactory()->getEditable(static::CONFIGNAME);
     // Set the extraction method variable.
     $config->set('extraction_method', $extractor_plugin_id);
-    // Set the preserving cache option
+    // Set the preserving cache option.
     $config->set('preserve_cache', $form_state->getValue('preserve_cache'));
     $config->save();
 
@@ -146,7 +146,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $extracted_data = NULL;
     try {
       $extracted_data = $extractor_plugin->extract($file);
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $error = $e->getMessage();
     }
     $file->delete();
@@ -200,7 +201,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *
    * @param array $form
    *   The form array.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
   public function buildTextExtractorConfigForm(array &$form, FormStateInterface $form_state) {
@@ -244,7 +245,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *
    * @param array $form
    *   The form array.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
   public function buildTextExtractorTestResultForm(array &$form, FormStateInterface $form_state) {
@@ -283,7 +284,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
    *
    * @param array $form
    *   The form array.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    *
    * @return array
@@ -313,8 +314,8 @@ class TextExtractorFormSettings extends ConfigFormBase {
       copy($source, $filepath);
       // Create the file object.
       $file = File::create([
-            'uri' => $filepath,
-            'uid' => $this->currentUser()->id(),
+        'uri' => $filepath,
+        'uid' => $this->currentUser()->id(),
       ]);
       $file->save();
     }

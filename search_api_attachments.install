@@ -14,7 +14,7 @@ function search_api_attachments_uninstall() {
 }
 
 /**
- * Add path configuration for pdftotext_extractor
+ * Add path configuration for pdftotext_extractor.
  */
 function search_api_attachments_update_8001() {
   \Drupal::configFactory()

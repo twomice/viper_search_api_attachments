@@ -2,7 +2,6 @@
 
 namespace Drupal\search_api_attachments\Plugin\search_api_attachments;
 
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -11,7 +10,6 @@ use Drupal\search_api_attachments\TextExtractorPluginBase;
 use Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Drupal\file\Entity\File;
 
 /**
@@ -80,10 +78,10 @@ class SolrExtractor extends TextExtractorPluginBase {
    * Extract the body from XML response.
    */
   public static function extractBody($xml_data) {
-     if (!preg_match(',<body[^>]*>(.*)</body>,sim', $xml_data, $matches)) {
-       // If the body can't be found return just the text. This will be safe
-       // and contain any text to index.
-       return strip_tags($xml_data);
+    if (!preg_match(',<body[^>]*>(.*)</body>,sim', $xml_data, $matches)) {
+      // If the body can't be found return just the text. This will be safe
+      // and contain any text to index.
+      return strip_tags($xml_data);
     }
     // Return the full content of the body. Including tags that can optionally
     // be used for index weight.

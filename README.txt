@@ -185,5 +185,3 @@ SIMPLE USAGE EXAMPLE (media fields content (media entities of type File))
 13) Go to admin/config/search/search-api/index/my_index and Index items.
 
 14) Go to /saa and search for any term in the title, body or in the pdf file :)
-
-
