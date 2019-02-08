@@ -233,7 +233,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
       $form['text_extractor_config']['#title'] = $this->t('@extractor_plugin_label configuration', ['@extractor_plugin_label' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]]);
-      $text_extractor_form = $extractor_plugin->buildConfigurationForm(array(), $form_state);
+      $text_extractor_form = $extractor_plugin->buildConfigurationForm([], $form_state);
 
       $form['text_extractor_config'] += $text_extractor_form;
     }
@@ -312,10 +312,10 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $source .= '/data/search_api_attachments_test_extraction.pdf';
       copy($source, $filepath);
       // Create the file object.
-      $file = File::create(array(
+      $file = File::create([
             'uri' => $filepath,
             'uid' => $this->currentUser()->id(),
-      ));
+      ]);
       $file->save();
     }
     else {

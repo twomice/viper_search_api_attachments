@@ -142,17 +142,17 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = array();
+    $elements = [];
 
     $host_entity = $items->getParent()->getValue();
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $file) {
       if ($contents = $this->extractFileContents($host_entity, $file)) {
-        $elements[$delta] = array(
+        $elements[$delta] = [
           '#markup' => $contents,
-          '#cache' => array(
+          '#cache' => [
             'tags' => $file->getCacheTags(),
-          ),
-        );
+          ],
+        ];
       }
     }
 
@@ -225,7 +225,7 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
     }
     $result = $this->moduleHandler->invokeAll(
       'search_api_attachments_indexable',
-      array($file)
+      [$file]
     );
     $indexable = !in_array(FALSE, $result, TRUE);
     return $indexable;

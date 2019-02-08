@@ -120,8 +120,8 @@ class TikaExtractor extends TextExtractorPluginBase {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['java_path'] = $form_state->getValue(array('text_extractor_config', 'java_path'));
-    $this->configuration['tika_path'] = $form_state->getValue(array('text_extractor_config', 'tika_path'));
+    $this->configuration['java_path'] = $form_state->getValue(['text_extractor_config', 'java_path']);
+    $this->configuration['tika_path'] = $form_state->getValue(['text_extractor_config', 'tika_path']);
     parent::submitConfigurationForm($form, $form_state);
   }
 
