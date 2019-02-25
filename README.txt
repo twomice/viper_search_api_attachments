@@ -34,8 +34,8 @@ Choose an extraction method and follow the instructions under the respective
 heading below.
 
 
-EXTRACTION CONFIGURATION (TIKA APP)
------------------------------------
+EXTRACTION CONFIGURATION: TIKA APP
+----------------------------------
 On Ubuntu 18.04
 
 Install java
@@ -47,8 +47,8 @@ Download Apache Tika App JAR: http://tika.apache.org/download.html
 Enter the full path on your server where you downloaded the jar
 e.g. /var/apache-tika/tika-app-1.18.jar.
 
-EXTRACTION CONFIGURATION (TIKA SERVER)
---------------------------------------
+EXTRACTION CONFIGURATION: TIKA SERVER
+-------------------------------------
 On Ubuntu 18.04
 
 Install java
@@ -68,8 +68,8 @@ More info:
 - https://wiki.apache.org/tika/TikaJAXRS
 - https://github.com/apache/tika/tree/master/tika-server
 
-EXTRACTION CONFIGURATION (SOLR)
--------------------------------
+EXTRACTION CONFIGURATION: SOLR
+------------------------------
 Install and configure the search_api_solr module
 https://www.drupal.org/project/search_api_solr
 Make sure to configure it as explained in its README.txt
@@ -77,14 +77,14 @@ Create at least one solr server (/admin/config/search/search-api/add-server)
 Now you can choose it from /admin/config/search/search_api_attachments
 
 
-EXTRACTION CONFIGURATION (PDFTOTEXT)
-------------------------------------
+EXTRACTION CONFIGURATION: PDFTOTEXT
+-----------------------------------
 Pdftotext is a command line utility tool included by default on many linux
 distributions. See the wikipedia page for more info:
 https://en.wikipedia.org/wiki/Pdftotext
 
-EXTRACTION CONFIGURATION (PYTHON PDF2TXT)
------------------------------------------
+EXTRACTION CONFIGURATION: PYTHON PDF2TXT
+----------------------------------------
 On Debian 8
 
 Install python or make sure you already have it
@@ -93,14 +93,14 @@ Install Pdf2txt as described in https://github.com/euske/pdfminer
 or try
 > sudo apt-get install python-pdfminer
 
-EXTRACTION CONFIGURATION (GO DOCCONV)
------------------------------------------
+EXTRACTION CONFIGURATION: GO DOCCONV
+------------------------------------
 Install golang or make sure you already have it
 get docconv (https://github.com/sajari/docconv)
 Install docconv as described in https://github.com/sajari/docconv
 
 
-SIMPLE USAGE EXAMPLE (FILE FIELDS CONTENT (FILE ENTITIES))
+SIMPLE USAGE EXAMPLE 1: FILE FIELDS CONTENT: FILE ENTITIES
 ----------------------------------------------------------
 0) This is tested with :
    drupal 8.6.x
@@ -155,8 +155,8 @@ SIMPLE USAGE EXAMPLE (FILE FIELDS CONTENT (FILE ENTITIES))
 
 
 
-SIMPLE USAGE EXAMPLE (MEDIA FIELDS CONTENT (MEDIA ENTITIES OF TYPE FILE))
--------------------------------------------------------------------------
+SIMPLE USAGE EXAMPLE 2: MEDIA FIELDS CONTENT OR MEDIA ENTITIES OF TYPE FILE
+---------------------------------------------------------------------------
 0) This is tested with :
    drupal 8.6.x
    search_api 8.x-1.x
