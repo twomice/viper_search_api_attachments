@@ -2,7 +2,8 @@ Search Api Attachments
 
 This module will extract the content out of attached files using chosen method
 among:
- - the Tika library
+ - the Tika App JAR
+ - the Tika Server JAR
  - the build in Solr extractor
  - the Pdftotext command line tool
  - the python Pdf2txt extractor
@@ -33,18 +34,39 @@ Choose an extraction method and follow the instructions under the respective
 heading below.
 
 
-EXTRACTION CONFIGURATION (Tika)
--------------------------------
+EXTRACTION CONFIGURATION (Tika App)
+-----------------------------------
 On Ubuntu 18.04
 
 Install java
 > sudo apt-get install openjdk-7-jdk
 
-Download Apache Tika library: http://tika.apache.org/download.html
+Download Apache Tika App JAR: http://tika.apache.org/download.html
 > wget http://mir2.ovh.net/ftp.apache.org/dist/tika/tika-app-1.18.jar
 
 Enter the full path on your server where you downloaded the jar
 e.g. /var/apache-tika/tika-app-1.18.jar.
+
+EXTRACTION CONFIGURATION (Tika Server)
+--------------------------------------
+On Ubuntu 18.04
+
+Install java
+> sudo apt-get install openjdk-7-jdk
+
+Download Apache Tika Server JAR: http://tika.apache.org/download.html
+> wget https://www-eu.apache.org/dist/tika/tika-server-1.20.jar
+OR
+> wget https://www-us.apache.org/dist/tika/tika-server-1.20.jar
+
+Launch Tika server
+> java -jar tika-server-1.20.jar
+
+Configure search_api_attachments to use it at /admin/config/search/search_api_attachments
+
+More info:
+- https://wiki.apache.org/tika/TikaJAXRS
+- https://github.com/apache/tika/tree/master/tika-server
 
 EXTRACTION CONFIGURATION (Solr)
 -------------------------------
