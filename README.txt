@@ -1,3 +1,5 @@
+INTRODUCTION
+------------
 Search Api Attachments
 
 This module will extract the content out of attached files using chosen method
