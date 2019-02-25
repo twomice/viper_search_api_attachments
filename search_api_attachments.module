@@ -5,6 +5,7 @@
  * Implement hooks and help functions to delete extracted files cache content.
  */
 
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\Entity\File;
 
 /**
@@ -62,11 +63,11 @@ function search_api_attachments_theme() {
 /**
  * Implements hook_help().
  */
-function search_api_attachments_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+function search_api_attachments_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.search_api_attachments':
       $text = file_get_contents(dirname(__FILE__) . '/README.txt');
-      if (! \Drupal::moduleHandler()->moduleExists('markdown')) {
+      if (!\Drupal::moduleHandler()->moduleExists('markdown')) {
         return '<pre>' . $text . '</pre>';
       }
       else {

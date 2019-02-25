@@ -64,7 +64,8 @@ OR
 Launch Tika server
 > java -jar tika-server-1.20.jar
 
-Configure search_api_attachments to use it at /admin/config/search/search_api_attachments
+Configure search_api_attachments to use it at the following path:
+/admin/config/search/search_api_attachments
 
 More info:
 - https://wiki.apache.org/tika/TikaJAXRS
