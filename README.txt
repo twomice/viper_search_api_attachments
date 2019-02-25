@@ -35,6 +35,9 @@ Go to the configuration: admin/config/search/search_api_attachments
 Choose an extraction method and follow the instructions under the respective
 heading below.
 
+DEVELOPMENT
+-----------
+To generate a pareview.sh report, submit the form in https://bit.ly/2TmdFFz
 
 EXTRACTION CONFIGURATION: TIKA APP
 ----------------------------------
