@@ -73,8 +73,8 @@ class TikaServerExtractor extends TextExtractorPluginBase {
       'timeout' => $this->configuration['timeout'],
       'body' => fopen($file->getFileUri(), 'r'),
       'headers'   => [
-        'Accept' => 'text/plain'
-      ]
+        'Accept' => 'text/plain',
+      ],
     ];
 
     $response = $this->httpClient->request('PUT', $this->getServerUri() . '/tika', $options);
