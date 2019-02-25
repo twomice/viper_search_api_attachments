@@ -288,10 +288,10 @@ class ExtractedText extends FileFormatterBase implements ContainerFactoryPluginI
    */
   public function settingsSummary() {
     $summary = [];
-    $summary[] = t('Excluded file extensions: @extensions', ['@extensions' => $this->getSetting('excluded_extensions')]);
-    $summary[] = t('Maximum upload size: @maxsize', ['@maxsize' => $this->getSetting('max_filesize')]);
+    $summary[] = $this->t('Excluded file extensions: @extensions', ['@extensions' => $this->getSetting('excluded_extensions')]);
+    $summary[] = $this->t('Maximum upload size: @maxsize', ['@maxsize' => $this->getSetting('max_filesize')]);
     $isexcluded = $this->getSetting('excluded_private') ? 'true' : 'false';
-    $summary[] = t('Exclude private files: @isexcluded', ['@isexcluded' => $isexcluded]);
+    $summary[] = $this->t('Exclude private files: @isexcluded', ['@isexcluded' => $isexcluded]);
     return $summary;
   }
 
