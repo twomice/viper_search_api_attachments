@@ -34,7 +34,7 @@ Choose an extraction method and follow the instructions under the respective
 heading below.
 
 
-EXTRACTION CONFIGURATION (Tika App)
+EXTRACTION CONFIGURATION (TIKA APP)
 -----------------------------------
 On Ubuntu 18.04
 
@@ -47,7 +47,7 @@ Download Apache Tika App JAR: http://tika.apache.org/download.html
 Enter the full path on your server where you downloaded the jar
 e.g. /var/apache-tika/tika-app-1.18.jar.
 
-EXTRACTION CONFIGURATION (Tika Server)
+EXTRACTION CONFIGURATION (TIKA SERVER)
 --------------------------------------
 On Ubuntu 18.04
 
@@ -68,7 +68,7 @@ More info:
 - https://wiki.apache.org/tika/TikaJAXRS
 - https://github.com/apache/tika/tree/master/tika-server
 
-EXTRACTION CONFIGURATION (Solr)
+EXTRACTION CONFIGURATION (SOLR)
 -------------------------------
 Install and configure the search_api_solr module
 https://www.drupal.org/project/search_api_solr
@@ -77,13 +77,13 @@ Create at least one solr server (/admin/config/search/search-api/add-server)
 Now you can choose it from /admin/config/search/search_api_attachments
 
 
-EXTRACTION CONFIGURATION (Pdftotext)
+EXTRACTION CONFIGURATION (PDFTOTEXT)
 ------------------------------------
 Pdftotext is a command line utility tool included by default on many linux
 distributions. See the wikipedia page for more info:
 https://en.wikipedia.org/wiki/Pdftotext
 
-EXTRACTION CONFIGURATION (python Pdf2txt)
+EXTRACTION CONFIGURATION (PYTHON PDF2TXT)
 -----------------------------------------
 On Debian 8
 
@@ -93,14 +93,14 @@ Install Pdf2txt as described in https://github.com/euske/pdfminer
 or try
 > sudo apt-get install python-pdfminer
 
-EXTRACTION CONFIGURATION (go docconv)
+EXTRACTION CONFIGURATION (GO DOCCONV)
 -----------------------------------------
 Install golang or make sure you already have it
 get docconv (https://github.com/sajari/docconv)
 Install docconv as described in https://github.com/sajari/docconv
 
 
-SIMPLE USAGE EXAMPLE (File fields content (file entities))
+SIMPLE USAGE EXAMPLE (FILE FIELDS CONTENT (FILE ENTITIES))
 ----------------------------------------------------------
 0) This is tested with :
    drupal 8.6.x
@@ -155,7 +155,7 @@ SIMPLE USAGE EXAMPLE (File fields content (file entities))
 
 
 
-SIMPLE USAGE EXAMPLE (media fields content (media entities of type File))
+SIMPLE USAGE EXAMPLE (MEDIA FIELDS CONTENT (MEDIA ENTITIES OF TYPE FILE))
 -------------------------------------------------------------------------
 0) This is tested with :
    drupal 8.6.x
