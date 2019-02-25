@@ -117,7 +117,12 @@ class TextExtractorFormSettings extends ConfigFormBase {
     if ($extractor_plugin_id) {
       $configuration = $config->get($extractor_plugin_id . '_configuration');
       $extractor_plugin = $this->getTextExtractorPluginManager()->createInstance($extractor_plugin_id, $configuration);
-      $extractor_plugin->validateConfigurationForm($form, $form_state);
+
+      // Validate the text_extractor_config part of the form only if it
+      // corresponds to the current $extractor_plugin_id.
+      if (!empty($form['text_extractor_config']['extraction_method']['#value']) && $form['text_extractor_config']['extraction_method']['#value'] == $extractor_plugin_id) {
+        $extractor_plugin->validateConfigurationForm($form, $form_state);
+      }
     }
   }
 
@@ -238,6 +243,10 @@ class TextExtractorFormSettings extends ConfigFormBase {
       $form['text_extractor_config']['#title'] = $this->t('@extractor_plugin_label configuration', ['@extractor_plugin_label' => $this->getExtractionPluginInformations()['labels'][$extractor_plugin_id]]);
       $text_extractor_form = $extractor_plugin->buildConfigurationForm([], $form_state);
 
+      $form['text_extractor_config']['extraction_method'] = [
+        '#type' => 'value',
+        '#value' => $extractor_plugin_id,
+      ];
       $form['text_extractor_config'] += $text_extractor_form;
     }
   }

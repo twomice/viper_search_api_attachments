@@ -123,16 +123,6 @@ class SolrExtractor extends TextExtractorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $values = $form_state->getValues();
-    if (isset($values['text_extractor_config']['solr_server']) && $values['text_extractor_config']['solr_server'] == '') {
-      $form_state->setError($form['text_extractor_config']['solr_server'], $this->t('Please choose the solr server to use for extraction.'));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['solr_server'] = $form_state->getValue(['text_extractor_config', 'solr_server']);
     parent::submitConfigurationForm($form, $form_state);
