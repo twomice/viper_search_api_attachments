@@ -12,7 +12,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Drupal\search_api\Datasource\DatasourceInterface;
@@ -203,19 +202,22 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
             // Get type to manage media entity reference case.
             $type = $entity->get($field_name)->getFieldDefinition()->getType();
             if ($type == 'entity_reference') {
+              /** @var \Drupal\Core\Field\BaseFieldDefinition $field_def */
               $field_def = $entity->get($field_name)->getFieldDefinition();
-              if ($field_def instanceof FieldConfig) {
-                $deps = $field_def->getDependencies();
-                if (in_array('media.type.file', $deps['config'])) {
-                  // This is a media field.
-                  $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
-                  foreach ($filefield_values as $media_value) {
-                    $media = Media::load($media_value['target_id']);
-                    // Supporting only the default media file field for now.
-                    if ($media && $media->bundle() == 'file') {
-                      $mediafilefield_values = $media->field_media_file->getValue();
-                      foreach ($mediafilefield_values as $filefield_value) {
-                        $all_fids[] = $filefield_value['target_id'];
+              if ($field_def->getItemDefinition()->getSetting('target_type') === 'media') {
+                // This is a media field.
+                $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
+                foreach ($filefield_values as $media_value) {
+                  $media = Media::load($media_value['target_id']);
+                  if ($media !== null) {
+                    $bundle_configuration = $media->getSource()->getConfiguration();
+                    if (isset($bundle_configuration['source_field'])) {
+                      /** @var \Drupal\Core\Field\FieldItemListInterface $field_item */
+                      foreach ($media->get($bundle_configuration['source_field'])->filterEmptyItems() as $field_item) {
+                        if ($field_item->getFieldDefinition()->getType() === 'file') {
+                          $value = $field_item->getValue();
+                          $all_fids[] = $value['target_id'];
+                        }
                       }
                     }
                   }
@@ -418,10 +420,21 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
             $file_elements[$property->getName()] = $property->getLabel();
           }
           if ($property->getType() == "entity_reference") {
-            if ($property instanceof FieldConfig) {
-              $deps = $property->getDependencies();
-              if (in_array('media.type.file', $deps['config'])) {
-                $file_elements[$property->getName()] = $property->getLabel();
+            if ($property->getSetting('target_type') === 'media') {
+              $settings = $property->getItemDefinition()->getSettings();
+              if (isset($settings['handler_settings']['target_bundles'])) {
+                // For each media bundle allowed, check if the source field is a
+                // file field.
+                foreach ($settings['handler_settings']['target_bundles'] as $bundle_name) {
+                  $bundle_configuration = $this->entityTypeManager->getStorage('media_type')->load($bundle_name)->toArray();
+                  if (isset($bundle_configuration['source_configuration']['source_field'])) {
+                    $source_field = $bundle_configuration['source_configuration']['source_field'];
+                    $field_config = $this->entityTypeManager->getStorage('field_storage_config')->load(sprintf('media.%s', $source_field))->toArray();
+                    if (isset($field_config['type']) && $field_config['type'] === 'file') {
+                      $file_elements[$property->getName()] = $property->getLabel();
+                    }
+                  }
+                }
               }
             }
           }
