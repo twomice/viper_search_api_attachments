@@ -10,7 +10,7 @@ plugin.plugin_configuration.search_api_processor.file_attachments:
       label: 'Number of files indexed per file field'
     number_first_bytes:
       type: string
-      label: 'Limit of the size of the extracted string before indexing'
+      label: 'Size limit of the extracted string before indexing'
     max_filesize:
       type: string
       label: 'Maximum upload size'
