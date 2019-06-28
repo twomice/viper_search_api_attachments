@@ -10,8 +10,8 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
-use Drupal\Core\Utility\Error;
 use Drupal\Core\Plugin\PluginFormInterface;
+use Drupal\Core\Utility\Error;
 use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
 use Drupal\search_api\Datasource\DatasourceInterface;
@@ -44,6 +44,10 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    * Name of the config being edited.
    */
   const CONFIGNAME = 'search_api_attachments.admin_config';
+
+  const FALLBACK_QUEUE_LOCK = 'search_api_attachments_fallback_queue';
+
+  const FALLBACK_QUEUE_KV = 'search_api_attachments:queued';
 
   /**
    * Name of the "virtual" field that handles file entity type extractions.
@@ -278,8 +282,17 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
     }
     else {
       try {
-        $extracted_data = $extractor_plugin->extract($file);
-        $extracted_data = $this->limitBytes($extracted_data);
+        // Only extract if this file has not previously failed and was queued.
+        $fallback_collection = $this->keyValue->get(FilesExtractor::FALLBACK_QUEUE_KV);
+        $queued_files = $fallback_collection->get($file->id());
+        if (empty($queued_files[$entity->getEntityTypeId()][$entity->id()])) {
+          $extracted_data = $extractor_plugin->extract($file);
+          $extracted_data = $this->limitBytes($extracted_data);
+          $this->keyValue->get($collection)->set($key, $extracted_data);
+        }
+        else {
+          $this->queueItem($entity, $file);
+        }
       }
       catch (\Exception $e) {
         $error = Error::decodeException($e);
@@ -294,10 +307,49 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
           '@file' => $error['%file'],
         ];
         $this->logger->log(LogLevel::ERROR, 'Error extracting text from file @file_id for @entity_type @entity_id. @type: @message in @function (line @line of @file).', $message_params);
+        $this->queueItem($entity, $file);
       }
-      $this->keyValue->get($collection)->set($key, $extracted_data);
     }
     return $extracted_data;
+  }
+
+  /**
+   * Queue a failed extraction for later processing.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity the file is attached to.
+   * @param \Drupal\file\Entity\File $file
+   *   A file object.
+   *
+   * @return bool
+   *   Success of queueing process.
+   */
+  private function queueItem(EntityInterface $entity, File $file) {
+
+    if (\Drupal::lock()->acquire(static::FALLBACK_QUEUE_LOCK)) {
+      $queued_file_collection = $this->keyValue->get(static::FALLBACK_QUEUE_KV);
+      $queued_files = $queued_file_collection->get($file->id());
+      $queued_files[$entity->getEntityTypeId()][$entity->id()] = TRUE;
+      $queued_file_collection->set($file->id(), $queued_files);
+      \Drupal::lock()->release(static::FALLBACK_QUEUE_LOCK);
+
+      // Add file to queue.
+      $queue = \Drupal::queue('search_api_attachments');
+      $item = new \stdClass();
+      $item->fid = $file->id();
+      $item->entity_id = $entity->id();
+      $item->entity_type = $entity->getEntityTypeId();
+      $item->extract_attempts = 1;
+      $queue->createItem($item);
+
+      $this->logger->log(LogLevel::INFO, 'File added to the queue for text extraction @file_id for @entity_type @entity_id.', [
+        '@file_id' => $file->id(),
+        '@entity_id' => $entity->id(),
+        '@entity_type' => $entity->getEntityTypeId(),
+      ]);
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
