@@ -114,7 +114,7 @@ class ExtractorQueue extends QueueWorkerBase implements ContainerFactoryPluginIn
       // Skip file if element is found in key_value collection.
       $extracted_data = $this->keyValue->get($collection)->get($key);
       if (empty($extracted_data)) {
-        // Extract file and save in key_value collection.
+        // Extract file and save it in key_value collection.
         $extracted_data = $extractor_plugin->extract($file);
         $this->keyValue->get($collection)->set($key, $extracted_data);
       }
