@@ -80,8 +80,11 @@ class ExtractorQueue extends QueueWorkerBase implements ContainerFactoryPluginIn
   }
 
   /**
-   * Get the extractor plugin for
+   * Get the extractor plugin.
+   *
    * @return object
+   *   The plugin.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   protected function getExtractorPlugin() {

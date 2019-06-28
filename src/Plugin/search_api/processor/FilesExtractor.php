@@ -213,7 +213,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
                 $filefield_values = $entity->get($field_name)->filterEmptyItems()->getValue();
                 foreach ($filefield_values as $media_value) {
                   $media = Media::load($media_value['target_id']);
-                  if ($media !== null) {
+                  if ($media !== NULL) {
                     $bundle_configuration = $media->getSource()->getConfiguration();
                     if (isset($bundle_configuration['source_field'])) {
                       /** @var \Drupal\Core\Field\FieldItemListInterface $field_item */
