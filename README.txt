@@ -38,6 +38,8 @@ heading below.
 DEVELOPMENT
 -----------
 To generate a pareview.sh report, submit the form in https://bit.ly/2TmdFFz
+To check the number of items in search_api_attachments queue: drush queue-list
+To run items in the queue : drush queue-run search_api_attachments
 
 EXTRACTION CONFIGURATION: TIKA APP
 ----------------------------------
