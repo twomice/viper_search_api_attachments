@@ -80,7 +80,8 @@ class TikaServerExtractor extends TextExtractorPluginBase {
     $response = $this->httpClient->request('PUT', $this->getServerUri() . '/tika', $options);
     if ($response->getStatusCode() === 200) {
       $data = (string) $response->getBody();
-    }else{
+    }
+    else {
       throw new \Exception('Tika JAX-RS Server is not available.');
     }
 
