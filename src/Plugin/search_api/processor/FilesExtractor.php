@@ -388,7 +388,10 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    *   The first N bytes of the extracted text that will be indexed and cached.
    */
   public function limitBytes($extracted_text) {
-    $bytes = 0;
+    // Default the configuration to a sensible amount of text to extract and
+    // cache in the database. 1 million characters should be enough for most
+    // cases.
+    $bytes = Bytes::toInt('1 MB');
     if (isset($this->configuration['number_first_bytes'])) {
       $bytes = Bytes::toInt($this->configuration['number_first_bytes']);
     }
@@ -528,11 +531,11 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
     $form['number_first_bytes'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Limit size of the extracted string before indexing.'),
-      '#default_value' => isset($this->configuration['number_first_bytes']) ? $this->configuration['number_first_bytes'] : '0',
+      '#default_value' => isset($this->configuration['number_first_bytes']) ? $this->configuration['number_first_bytes'] : '1 MB',
       '#size' => 5,
       '#min' => 0,
       '#max' => 99999,
-      '#description' => $this->t('Enter a value like "1000", "10 KB", "10 MB" or "10 GB" in order to restrict the size of the content after extraction.<br /> 0 to index the full extracted content without bytes limitation.'),
+      '#description' => $this->t('Enter a value like "1000", "10 KB", "10 MB" or "10 GB" in order to restrict the size of the content after extraction.<br /> "0" to index the full extracted content without bytes limitation.'),
     ];
     $form['max_filesize'] = [
       '#type' => 'textfield',
