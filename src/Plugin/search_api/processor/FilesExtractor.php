@@ -2,6 +2,8 @@
 
 namespace Drupal\search_api_attachments\Plugin\search_api\processor;
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\Bytes;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -481,15 +483,25 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
                 // For each media bundle allowed, check if the source field is a
                 // file field.
                 foreach ($settings['handler_settings']['target_bundles'] as $bundle_name) {
-                  if (!empty($this->entityTypeManager->getStorage('media_type')->load($bundle_name))) {
-                    $bundle_configuration = $this->entityTypeManager->getStorage('media_type')->load($bundle_name)->toArray();
-                    if (isset($bundle_configuration['source_configuration']['source_field'])) {
-                      $source_field = $bundle_configuration['source_configuration']['source_field'];
-                      $field_config = $this->entityTypeManager->getStorage('field_storage_config')->load(sprintf('media.%s', $source_field))->toArray();
-                      if (isset($field_config['type']) && $field_config['type'] === 'file') {
-                        $file_elements[$property->getName()] = $property->getLabel();
+                  try {
+                    if (!empty($this->entityTypeManager->getStorage('media_type')->load($bundle_name))) {
+                      $bundle_configuration = $this->entityTypeManager->getStorage('media_type')->load($bundle_name)->toArray();
+                      if (isset($bundle_configuration['source_configuration']['source_field'])) {
+                        $source_field = $bundle_configuration['source_configuration']['source_field'];
+                        $field_config = $this->entityTypeManager->getStorage('field_storage_config')->load(sprintf('media.%s', $source_field))->toArray();
+                        if (isset($field_config['type']) && $field_config['type'] === 'file') {
+                          $file_elements[$property->getName()] = $property->getLabel();
+                        }
                       }
                     }
+                  }
+                  catch (InvalidPluginDefinitionException $e) {
+                    watchdog_exception('search_api_attachments', $e);
+                    continue;
+                  }
+                  catch (PluginNotFoundException $e) {
+                    watchdog_exception('search_api_attachments', $e);
+                    continue;
                   }
                 }
               }
