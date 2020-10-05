@@ -13,6 +13,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\Core\Utility\Error;
 use Drupal\file\Entity\File;
 use Drupal\media\Entity\Media;
@@ -121,9 +122,16 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
   protected $logger;
 
   /**
+   * Stream wrapper manager service.
+   *
+   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
+   */
+  protected $streamWrapperManager;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper, ExtractFileValidator $extractFileValidator, LoggerInterface $logger) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TextExtractorPluginManager $text_extractor_plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, KeyValueFactoryInterface $key_value, ModuleHandlerInterface $module_handler, FieldsHelperInterface $field_helper, ExtractFileValidator $extractFileValidator, LoggerInterface $logger, StreamWrapperManagerInterface $stream_wrapper_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->textExtractorPluginManager = $text_extractor_plugin_manager;
     $this->configFactory = $config_factory;
@@ -132,6 +140,7 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
     $this->moduleHandler = $module_handler;
     $this->fieldHelper = $field_helper;
     $this->extractFileValidator = $extractFileValidator;
+    $this->streamWrapperManager = $stream_wrapper_manager;
     $this->logger = $logger;
   }
 
@@ -150,7 +159,8 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
         $container->get('module_handler'),
         $container->get('search_api.fields_helper'),
         $container->get('search_api_attachments.extract_file_validator'),
-        $container->get('logger.channel.search_api_attachments')
+        $container->get('logger.channel.search_api_attachments'),
+        $container->get('stream_wrapper_manager')
     );
   }
 
@@ -273,9 +283,15 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    */
   public function extractOrGetFromCache(EntityInterface $entity, File $file, TextExtractorPluginInterface $extractor_plugin) {
     // Directly process plaintext files.
+
+    $current_file_type = '';
     if (substr($file->getMimeType(), 0, 5) == 'text/') {
       return file_get_contents($file->getFileUri());
     }
+    else {
+      $current_file_type = 'no_text';
+    }
+
     $collection = 'search_api_attachments';
     $key = $collection . ':' . $file->id();
     $extracted_data = '';
@@ -293,6 +309,9 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
           $this->keyValue->get($collection)->set($key, $extracted_data);
         }
         else {
+          if ($current_file_type == 'no_text') {
+            $extracted_data = $extractor_plugin->extract($file);
+          }
           $this->queueItem($entity, $file);
         }
       }
@@ -422,7 +441,15 @@ class FilesExtractor extends ProcessorPluginBase implements PluginFormInterface 
    */
   public function isFileIndexable($file, ItemInterface $item, $field_name = NULL) {
     // File should exist in disc.
-    $indexable = file_exists($file->getFileUri());
+
+    if (substr($file->getMimeType(), 0, 5) == 'text/') {
+      $indexable = file_exists($file->getFileUri());
+    }
+    else {
+      $file_system = 'sites/default/files/private/';
+      $realpath = $file_system . \Drupal::service('file_system')->basename($file->getFileUri());
+      $indexable = file_exists($realpath);
+    }
     if (!$indexable) {
       return FALSE;
     }

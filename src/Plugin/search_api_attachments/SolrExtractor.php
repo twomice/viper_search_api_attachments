@@ -59,7 +59,8 @@ class SolrExtractor extends TextExtractorPluginBase {
    *   The text extracted from the file.
    */
   public function extract(File $file) {
-    $filepath = $this->getRealpath($file->getFileUri());
+    $file_system = 'sites/default/files/private/';
+    $filepath = $file_system . \Drupal::service('file_system')->basename($file->getFileUri());
     // Load the chosen Solr server entity.
     $conditions = [
       'status' => TRUE,
