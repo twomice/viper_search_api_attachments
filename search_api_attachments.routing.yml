@@ -5,3 +5,11 @@ search_api_attachments.admin_form:
     _title: 'Search API Attachments'
   requirements:
     _permission: 'administer search_api_attachments'
+
+search_api_attachments.solr_results:
+  path: '/resources/file-searchs'
+  defaults:
+    _controller: '\Drupal\search_api_attachments\Controller\solr_search::solrdata'
+    _title: 'Search  Attachments'
+  requirements:
+    _permission: 'access content'

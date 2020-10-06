@@ -57,6 +57,9 @@ function search_api_attachments_theme() {
         'type' => NULL,
       ],
     ],
+    'searchApi' => [
+      'variables' => ['report' => null,'query' => null,'rcount' => null,'allpager' => null,'page' => null,'type' => null,'sub' => null,'conteny_type'=> null,'term'=>null],
+    ],
   ];
 }
 

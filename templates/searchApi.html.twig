@@ -1,0 +1,150 @@
+<div id="main-wrapper" class="layout-main-wrapper clearfix">
+    <div id="main" class="container">
+
+        <div class="row row-offcanvas row-offcanvas-left clearfix">
+            <main class="main-content col" id="content" role="main">
+                <section class="section">
+                    <a id="main-content" tabindex="-1"></a>
+                    <div id="block-mainpagecontent" class="block block-system block-system-main-block">
+
+
+                        <div class="content">
+                            <div class="views-element-container contextual-region col-auto"><div class="contextual-region view view-duplicate-of-file-search view-id-duplicate_of_file_search view-display-id-page_1 js-view-dom-id-3f11df7aebdcc1a099409588035b91ec255723ca8ea839b958323c7fae2917e8">
+
+                                    <div data-contextual-id="entity.view.edit_form:view=duplicate_of_file_search:location=page&amp;name=duplicate_of_file_search&amp;display_id=page_1&amp;langcode=en" data-contextual-token="zEFFSSUib5GlegBRWFcAZvWTaPkSwpcvrGp_QG9d_QI" class="contextual"><button class="trigger focusable visually-hidden" type="button" aria-pressed="false">Open  configuration options</button><ul class="contextual-links" hidden=""><li class="entityviewedit-form"><a href="/admin/structure/views/view/duplicate_of_file_search/edit/page_1?destination=/resources/file-search">Edit view</a></li></ul></div>
+                                    <div class="view-header">
+                                        <small><a href="/resources/searchs">Search through page content</a>.</small>
+                                    </div>
+                                    <div class="view-filters">
+
+                                        <form class="views-exposed-form" data-drupal-selector="views-exposed-form-duplicate-of-file-search-page-1" action="/resources/file-searchs?page=1" method="get" id="views-exposed-form-duplicate-of-file-search-page-1" accept-charset="UTF-8" data-drupal-form-fields="edit-ss-upload">
+                                            <div class="form-row">
+
+
+
+                                                <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
+                                                    <label for="edit-ss-upload">File Attachment</label>
+                                                    <input data-drupal-selector="edit-ss-upload" type="text" id="edit-ss-upload" name="ss_upload" value="{{query}}" size="30" maxlength="128" class="form-text form-control">
+
+                                                </fieldset>
+                                                     <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
+                                                    <label for="edit-ss-upload">LO Type</label>
+                                                     <select class="form-control" id="edit-content-type" name='type'>
+                                                        <option value=''>Select Any LO Type</option>
+                                                        {% for key,ct in conteny_type %}
+                                                        <option value="{{ct.id}}" {% if type == ct.id %} selected="selected" {% endif %}>{{ct.name}}</option>
+                                                        {% endfor %}
+                                                      </select>
+                                                </fieldset>
+                                                     <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
+                                                    <label for="edit-ss-upload">Subdiscipline</label>
+                                                    <select class="form-control" id="edit-desc" name='sub'>
+                                                        <option value=''>Select Any Subdiscipline</option>
+                                                         {% for key,t in term %}
+                                                        <option value="{{t.id}}" {% if sub == t.id %} selected="selected" {% endif %} >{{t.name}}</option>
+                                                        {% endfor %}
+                                                      </select>
+                                                </fieldset>
+                                                <div style="margin-top: 31px" data-drupal-selector="edit-actions" class="form-actions js-form-wrapper form-group col-auto" id="edit-actions"><button data-drupal-selector="edit-submit-duplicate-of-file-search" type="submit" id="edit-submit-duplicate-of-file-search" value="Apply" class="button js-form-submit form-submit btn btn-primary">Apply</button>
+                                                </div>
+
+                                            </div>
+
+                                        </form>
+
+                                    </div>
+
+                                    <div class="view-content row">
+                                        <div class="table-responsive col">
+                                            {% if rcount > 0 %}
+                                                <table class="table table-hover table-striped views-table views-view-table cols-5">
+                                                    <thead class="">
+                                                        <tr>
+                                                            <th id="view-title-table-column" class="views-field views-field-title" scope="col">Title</th>
+                                                            <th id="view-body-table-column" class="views-field views-field-body" scope="col">Description</th>
+                                                            <th id="view-uid-1-table-column" class="views-field views-field-uid-1" scope="col">Author</th>
+                                                            <th id="view-type-table-column" class="views-field views-field-type" scope="col">LO Type</th>
+                                                            <th id="view-type-table-column" class="views-field views-field-type" scope="col">Subdiscipline</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for key,content in report %}
+                                                            <tr>
+                                                                <td headers="view-title-table-column" class="views-field views-field-title"><a href={{ path('entity.node.canonical', {'node': content.nid}) }} hreflang="und">{{content.title}}</a>          </td>
+                                                                <td headers="view-body-table-column" class="views-field views-field-body">     {{content.desc |raw}}     </td>
+                                                                <td headers="view-uid-1-table-column" class="views-field views-field-uid-1"><a href={{ path('entity.user.canonical', {'user': content.uid}) }} hreflang="en">{{content.user}}</a>          </td>
+                                                                <td headers="view-type-table-column" class="views-field views-field-type">{{content.type}}          </td>
+                                                                <td headers="view-type-table-column" class="views-field views-field-type">{{content.disc}}          </td>
+                                                            </tr>
+                                                        {% endfor %}
+
+                                                    </tbody>
+                                                </table>
+                                            {% else %}
+                                                <div class="view-empty">
+                                                    No results found.
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                    {% if rcount > 10 %}
+                                        <nav aria-label="Page navigation">
+                                            <h4 id="pagination-heading" class="visually-hidden">Pagination</h4>
+                                            <ul class="pagination js-pager__items">
+                                                {% if page > 1 %}
+                                                <li class="page-item">
+                                                    <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page=0" title="Go to first page" class="page-link">
+                                                        <span aria-hidden="true">«</span>
+                                                        <span class="sr-only">« First</span>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{ page - 1 }}" title="Go to previous page" rel="prev" class="page-link">
+                                                        <span aria-hidden="true">‹</span>
+                                                        <span class="sr-only">‹‹</span>
+                                                    </a>
+                                                </li>
+                                                {% endif %}
+                                                
+                                                {% for i in 1..allpager %}
+                                                    <!--<li class="page-item active">
+                                                        <span class="page-link">1</span>
+                                                    </li>-->
+
+                                                    <li class="page-item {% if i == page %} active  {% elseif page == 0 and i == 1 %} active {% endif %}">
+                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{i}}" title="" class="page-link">{{i}}</a>
+                                                    </li>
+                                                {% endfor %}
+                                                {% if page != allpager %}
+                                                    <li class="page-item" role="presentation">…</li>
+                                                    <li class="pager__item--next">
+                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{  page + 1 }}" title="Go to next page" rel="next" class="page-link">
+                                                            <span aria-hidden="true">›</span>
+                                                            <span class="sr-only">››</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{allpager}}" title="Go to last page" class="page-link">
+                                                            <span aria-hidden="true">»</span>
+                                                            <span class="sr-only">Last »</span>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                    {% endif %}
+
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
