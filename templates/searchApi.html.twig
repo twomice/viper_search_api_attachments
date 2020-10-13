@@ -32,23 +32,23 @@
                                                     <input data-drupal-selector="edit-ss-upload" type="text" id="edit-ss-upload" name="ss_upload" value="{{query}}" size="30" maxlength="128" class="form-text form-control">
 
                                                 </fieldset>
-                                                     <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
+                                                <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
                                                     <label for="edit-ss-upload">LO Type</label>
-                                                     <select class="form-control" id="edit-content-type" name='type'>
+                                                    <select class="form-control" id="edit-content-type" name='type'>
                                                         <option value=''>Select Any LO Type</option>
                                                         {% for key,ct in conteny_type %}
-                                                        <option value="{{ct.id}}" {% if type == ct.id %} selected="selected" {% endif %}>{{ct.name}}</option>
+                                                            <option value="{{ct.id}}" {% if type == ct.id %} selected="selected" {% endif %}>{{ct.name}}</option>
                                                         {% endfor %}
-                                                      </select>
+                                                    </select>
                                                 </fieldset>
-                                                     <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
+                                                <fieldset class="js-form-item js-form-type-textfield form-type-textfield js-form-item-ss-upload form-item-ss-upload form-group col-auto">
                                                     <label for="edit-ss-upload">Subdiscipline</label>
                                                     <select class="form-control" id="edit-desc" name='sub'>
                                                         <option value=''>Select Any Subdiscipline</option>
-                                                         {% for key,t in term %}
-                                                        <option value="{{t.id}}" {% if sub == t.id %} selected="selected" {% endif %} >{{t.name}}</option>
+                                                        {% for key,t in term %}
+                                                            <option value="{{t.id}}" {% if sub == t.id %} selected="selected" {% endif %} >{{t.name}}</option>
                                                         {% endfor %}
-                                                      </select>
+                                                    </select>
                                                 </fieldset>
                                                 <div style="margin-top: 31px" data-drupal-selector="edit-actions" class="form-actions js-form-wrapper form-group col-auto" id="edit-actions"><button data-drupal-selector="edit-submit-duplicate-of-file-search" type="submit" id="edit-submit-duplicate-of-file-search" value="Apply" class="button js-form-submit form-submit btn btn-primary">Apply</button>
                                                 </div>
@@ -97,47 +97,53 @@
                                         <nav aria-label="Page navigation">
                                             <h4 id="pagination-heading" class="visually-hidden">Pagination</h4>
                                             <ul class="pagination js-pager__items">
-                                                {% if page > 1 %}
-                                                <li class="page-item">
-                                                    <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page=0" title="Go to first page" class="page-link">
-                                                        <span aria-hidden="true">«</span>
-                                                        <span class="sr-only">« First</span>
-                                                    </a>
-                                                </li>
-                                                <li class="page-item">
-                                                    <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{ page - 1 }}" title="Go to previous page" rel="prev" class="page-link">
-                                                        <span aria-hidden="true">‹</span>
-                                                        <span class="sr-only">‹‹</span>
-                                                    </a>
-                                                </li>
-                                                {% endif %}
-                                                
-                                                {% for i in 1..allpager %}
-                                                    {% if (i <= 5) %}
-                                                      <li class="page-item {% if i == page %} active  {% elseif page == 0 and i == 1 %} active {% endif %}">
-                                                          <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{i}}" title="" class="page-link">{{i}}</a>
-                                                      </li>
-                                                    {% endif %}
-                                                {% endfor %}
-                                                {% if allpager > 10 %}
+                                                {% if page > 0 %}
+                                                    <li class="page-item">
+                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page=0" title="Go to first page" class="page-link">
+                                                            <span aria-hidden="true">«</span>
+                                                            <span class="sr-only">« First</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{ page - 1 }}" title="Go to previous page" rel="prev" class="page-link">
+                                                            <span aria-hidden="true">‹</span>
+                                                            <span class="sr-only">‹‹</span>
+                                                        </a>
+                                                    </li>
+                                                    {% if page > 4 %}
                                                     <li class="page-item" role="presentation">…</li>
+                                                     {% endif %}
                                                 {% endif %}
-                                                {% for i in 1..allpager %}
-                                                    {% if (i >= (allpager - 5)) %}
-                                                      <li class="page-item {% if i == page %} active  {% elseif page == 0 and i == 1 %} active {% endif %}">
-                                                          <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{i}}" title="" class="page-link">{{i}}</a>
-                                                      </li>
+                                                {% set m =1 %}
+                                                {% if page <= 4 and page > 1 %} {% set pagestart = page - (page-1) %} {% elseif page > 4 %} {% set pagestart = page - 3 %} {% elseif page == 0 %} {% set pagestart = page + 1 %} {% else %}{% set pagestart = page %} {% endif %}
+                                                {% for i  in pagestart..allpager %}
+                                                    {% if m < 10 %}
+                                                        {% if i == (page+1) %}
+                                                            <li class="page-item active">
+                                                                <span class="page-link">{{i}}</span>
+                                                            </li>
+                                                        {% elseif page == 0 and i == 1 %}
+                                                            <li class="page-item active">
+                                                                <span class="page-link">{{i}}</span>
+                                                            </li>
+                                                        {% else %}
+                                                            <li class="page-item">
+                                                                <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{i-1}}" title="" class="page-link">{{i}}</a>
+                                                            </li>
+                                                        {% endif %}
                                                     {% endif %}
+                                                    {% set m = m+1 %}
                                                 {% endfor %}
-                                                {% if page != allpager %}
-                                                  <li class="pager__item--next">
+                                                {% if page != (allpager-1) %}
+                                                    {% if allpager > 9 %}{% if allpager - page >= 6  %}<li class="page-item" role="presentation">…</li>{% endif %}{% endif %}
+                                                    <li class="pager__item--next">
                                                         <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{  page + 1 }}" title="Go to next page" rel="next" class="page-link">
                                                             <span aria-hidden="true">›</span>
                                                             <span class="sr-only">››</span>
                                                         </a>
                                                     </li>
                                                     <li class="page-item">
-                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{allpager}}" title="Go to last page" class="page-link">
+                                                        <a href="?ss_upload={{query}}&amp;type={{type}}&amp;sub={{sub}}&amp;page={{allpager-1}}" title="Go to last page" class="page-link">
                                                             <span aria-hidden="true">»</span>
                                                             <span class="sr-only">Last »</span>
                                                         </a>

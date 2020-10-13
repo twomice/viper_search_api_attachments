@@ -82,6 +82,11 @@ class Solr_search extends ControllerBase {
         $page = \Drupal::request()->query->get('page'); 
         $type = \Drupal::request()->query->get('type'); 
         $sub = \Drupal::request()->query->get('sub'); 
+        if(isset($page) && $page > 0){
+            $npage = $page - 1;
+        }else{
+            $npage = 0;
+        }
         $startRows = $page * 10;
 
         if($ss_upload != null){
@@ -108,7 +113,7 @@ class Solr_search extends ControllerBase {
 
          $result = $resultData['response']['docs'];
          $report_count = $resultData['response']['numFound'];
-         $allPager = $report_count/10;
+         $allPager = ceil($report_count/10);
          foreach($result as $key => $res){
             $explodeArray = explode('/', $res['id']);
             $title = $res['tm_X3b_und_title'][0];
@@ -119,6 +124,9 @@ class Solr_search extends ControllerBase {
              $nid = $explodeNode[0];
              $node = \Drupal::entityManager()->getStorage('node')->load($nid);
              $termload = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($res['its_taxonomy_vocabulary_3']);
+             if ($termload) {
+                $label = $termload->label();
+             }
              $user = \Drupal\user\Entity\User::load($res['its_uid']);
              $resultArray[$key]['title'] = $title;
              $resultArray[$key]['desc'] = $res['tm_X3b_und_field_description'][0];
@@ -126,7 +134,7 @@ class Solr_search extends ControllerBase {
              $resultArray[$key]['type'] = $node->type->entity->label();
              $resultArray[$key]['nid'] = $nid;
              $resultArray[$key]['uid'] = $res['its_uid'];
-             $resultArray[$key]['disc'] = $termload->label();
+             $resultArray[$key]['disc'] = $label;
          }
      }
          return [
@@ -145,5 +153,6 @@ class Solr_search extends ControllerBase {
 
                 ];
     }
+
 
     }
