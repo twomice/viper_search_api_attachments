@@ -1,6 +1,10 @@
 INTRODUCTION
 ------------
-Search Api Attachments
+Search Api Attachments - Viper Fork
+
+FORKED from https://git.drupalcode.org/project/search_api_attachments/-/commit/9b8a0d1aff2607b9205bdede9e0519dfdda1b3ce 
+for special behavior on viper site.
+
 
 This module will extract the content out of attached files using chosen method
 among:
