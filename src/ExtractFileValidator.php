@@ -2,7 +2,8 @@
 
 namespace Drupal\search_api_attachments;
 
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+#use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+use Symfony\Component\Mime\MimeTypeGuesserInterface;
 use Drupal\Component\Utility\Bytes;
 
 /**
@@ -17,14 +18,14 @@ class ExtractFileValidator {
   /**
    * The route match.
    *
-   * @var \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface
+   * @var \Symfony\Component\Mime\MimeTypeGuesserInterface
    */
   protected $mimeTypeGuesser;
 
   /**
    * Constructs a new ExtractFileValidator class.
    *
-   * @param \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface $mimeTypeGuesser
+   * @param \Symfony\Component\Mime\MimeTypeGuesserInterface $mimeTypeGuesser
    *   Mime type guesser service.
    */
   public function __construct(MimeTypeGuesserInterface $mimeTypeGuesser) {
@@ -84,7 +85,7 @@ class ExtractFileValidator {
       }
       else {
         $file_size_bytes = $file->getSize();
-        $configured_size_bytes = Bytes::toInt($configured_size);
+        $configured_size_bytes = Bytes::toNumber($configured_size);
         if ($file_size_bytes > $configured_size_bytes) {
           return FALSE;
         }

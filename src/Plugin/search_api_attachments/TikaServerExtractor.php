@@ -34,7 +34,7 @@ class TikaServerExtractor extends TextExtractorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypeGuesserInterface $mime_type_guesser, MessengerInterface $messenger, FileSystemInterface $file_system, ClientInterface $http_client) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypesInterface $mime_type_guesser, MessengerInterface $messenger, FileSystemInterface $file_system, ClientInterface $http_client) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $config_factory, $stream_wrapper_manager, $mime_type_guesser, $messenger, $file_system);
     $this->httpClient = $http_client;
   }

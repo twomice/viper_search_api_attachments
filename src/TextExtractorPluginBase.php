@@ -57,7 +57,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypeGuesserInterface $mime_type_guesser, MessengerInterface $messenger) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypesInterface $mime_type_guesser, MessengerInterface $messenger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->configFactory = $config_factory;
     $this->streamWrapperManager = $stream_wrapper_manager;

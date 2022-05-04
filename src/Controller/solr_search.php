@@ -122,7 +122,7 @@ class Solr_search extends ControllerBase {
             }
              $stype = $res['ss_type'];
              $nid = $explodeNode[0];
-             $node = \Drupal::entityManager()->getStorage('node')->load($nid);
+             $node = \Drupal::EntityTypeManager()->getStorage('node')->load($nid);
              $termload = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($res['its_taxonomy_vocabulary_3']);
              if ($termload) {
                 $label = $termload->label();

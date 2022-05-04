@@ -320,7 +320,7 @@ class TextExtractorFormSettings extends ConfigFormBase {
     $file = $this->entityTypeManager->getStorage('file')->loadByProperties($values);
     if (empty($file)) {
       // Copy the source file to public directory.
-      $source = drupal_get_path('module', 'search_api_attachments');
+      $source = \Drupal\Core\Extension\ExtensionPathResolver::getPath('module', 'search_api_attachments');
       $source .= '/data/search_api_attachments_test_extraction.pdf';
       copy($source, $filepath);
       // Create the file object.

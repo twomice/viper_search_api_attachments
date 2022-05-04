@@ -7,7 +7,7 @@ search_api_attachments.admin_form:
     _permission: 'administer search_api_attachments'
 
 search_api_attachments.solr_results:
-  path: '/resources/file-searchs'
+  path: '/resources/file-search'
   defaults:
     _controller: '\Drupal\search_api_attachments\Controller\solr_search::solrdata'
     _title: 'Search  Attachments'
