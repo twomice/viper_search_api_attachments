@@ -3,8 +3,21 @@ INTRODUCTION
 Search Api Attachments - Viper Fork
 
 FORKED from https://git.drupalcode.org/project/search_api_attachments/-/commit/9b8a0d1aff2607b9205bdede9e0519dfdda1b3ce 
-for special behavior on viper site.
+for special behavior on viper site:
 
+- Implements /resources/file-search, providing:
+  - Full-text searching of indexed file attachments through Solr.
+  - Filtering by learning-object (node) content type.
+  - Filtering by subdiscipline taxonomy term.
+  - Results displaying title, description, author, content type, and subdiscipline.
+  - Links to the corresponding content nodes and authors.
+  - Paginated results (10 per page).
+  - A link to the separate page-text search interface.
+- Modifies attachment extraction to resolve non-text files under sites/default/files/private/.
+- Changes the standard extraction workflow:
+  - Reads text/* files directly rather than passing them through an external extractor.
+  - Changes when non-text files are extracted and queued.
+  - Modifies extraction cache handling.
 
 This module will extract the content out of attached files using chosen method
 among:
