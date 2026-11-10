@@ -10,7 +10,7 @@ use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\search_api_attachments\TextExtractorPluginBase;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+use Symfony\Component\Mime\MimeTypesInterface;
 use Drupal\file\Entity\File;
 
 /**

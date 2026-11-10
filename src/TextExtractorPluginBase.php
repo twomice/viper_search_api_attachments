@@ -11,7 +11,7 @@ use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+use Symfony\Component\Mime\MimeTypesInterface;
 
 /**
  * Base class for plugins able to extract file content.
@@ -42,7 +42,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * Mime type guesser service.
    *
-   * @var \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface
+   * @var \Symfony\Component\Mime\MimeTypesInterface
    */
   protected $mimeTypeGuesser;
 
@@ -57,7 +57,7 @@ abstract class TextExtractorPluginBase extends PluginBase implements TextExtract
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypeGuesserInterface $mime_type_guesser, MessengerInterface $messenger) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, ConfigFactoryInterface $config_factory, StreamWrapperManagerInterface $stream_wrapper_manager, MimeTypesInterface $mime_type_guesser, MessengerInterface $messenger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->configFactory = $config_factory;
     $this->streamWrapperManager = $stream_wrapper_manager;

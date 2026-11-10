@@ -31,7 +31,11 @@ class Solr_search extends ControllerBase {
         'localhost' => $settings
       )
     );
-    $client = new \Solarium\Client($config);
+    $client = new \Solarium\Client(
+      \Drupal::httpClient(),
+      \Drupal::service('event_dispatcher'),
+      $config
+    );
     $query = $client->createSelect();
     $returned_fields = array(
       'id',
@@ -74,6 +78,7 @@ class Solr_search extends ControllerBase {
       );
     }
 
+    $report_count = NULL;
     if ($ss_upload == null) {
       $report_count == 0;
     } else {
